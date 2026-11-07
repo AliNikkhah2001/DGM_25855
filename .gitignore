@@ -1,5 +1,5 @@
 .DS_Store
 __pycache__/
 *.pyc
-CHW-1/data/
-CHW-1/runs/
+hw1/chw1/data/
+hw1/chw1/runs/

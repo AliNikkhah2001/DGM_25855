@@ -4,88 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deep Generative Models — Fall 2026</title>
-<style>
-  :root {
-    --bg: #f4f0e8;
-    --paper: #fbf8f2;
-    --ink: #1c1915;
-    --muted: #5c564c;
-    --line: #e0d5c4;
-    --accent: #8d3b2e;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--ink);
-    font: 18px/1.55 "Iowan Old Style", Palatino, Georgia, serif;
-  }
-  a { color: var(--accent); }
-  header, main { max-width: 880px; margin: 0 auto; padding: 28px 20px; }
-  header { padding-bottom: 0; }
-  .crumb { color: var(--muted); font-size: 14px; letter-spacing: .04em; text-transform: uppercase; }
-  h1 { font-weight: 500; font-size: 40px; letter-spacing: -.02em; margin: 8px 0 6px; }
-  .lede { color: var(--muted); margin-top: 0; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  article {
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 16px 18px 18px;
-  }
-  article h2 { font-size: 20px; font-weight: 500; margin: 0 0 6px; }
-  article p { margin: 0 0 10px; color: var(--muted); font-size: 16px; }
-  article a.more { font-size: 16px; }
-  .wide { grid-column: 1 / -1; }
-  figure { margin: 12px 0 0; }
-  img { width: 100%; height: auto; border-radius: 8px; background: white; }
-  figcaption { color: var(--muted); font-size: 14px; margin-top: 6px; }
-  footer { color: var(--muted); font-size: 14px; margin-top: 8px; }
-  @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
-</style>
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-<header>
+<div class="wrap">
+  <nav class="site" aria-label="Site">
+    <a href="./" aria-current="page">Course</a>
+    <a href="homeworks/">Homeworks</a>
+  </nav>
   <p class="crumb">AI MSc · Fall 2026 · DGM 25855</p>
   <h1>Deep Generative Models</h1>
-  <p class="lede">Homework 1, course 25732-1, Dr. Sajjad Amini. Written solutions, a teaching guide, and the coding assignment.</p>
-</header>
-<main>
+  <p class="lede">Course 25732-1, Dr. Sajjad Amini, Department of Electrical Engineering, Sharif University of Technology. Notes and assignments for the term live on separate pages.</p>
   <div class="grid">
     <article>
-      <h2>Study sheet</h2>
-      <p>Interactive notes for Problems 1–6, with the lecture checks and the figures.</p>
-      <a class="more" href="HW1_study.html">Open the study sheet</a>
+      <h2>Homeworks</h2>
+      <p>Each assignment has its own page: written work, a teaching guide, and code when the assignment has a coding part.</p>
+      <a href="homeworks/">Open the homework list</a>
     </article>
     <article>
-      <h2>Teaching guide</h2>
-      <p>Concepts from the foundation and autoregressive lectures, toy problems, then each homework part.</p>
-      <a class="more" href="HW1_tutorial.pdf">Read the PDF</a>
-    </article>
-    <article>
-      <h2>Written solutions</h2>
-      <p>The solution set, and the pass that checked it against the lecture notes.</p>
-      <a class="more" href="HW1_solutions.md">Solutions</a>
-      ·
-      <a class="more" href="HW1_validated.md">Lecture check</a>
-    </article>
-    <article>
-      <h2>Source</h2>
-      <p>The LaTeX for the guide, and the figures used in it.</p>
-      <a class="more" href="HW1_tutorial.tex">HW1_tutorial.tex</a>
-      ·
-      <a class="more" href="HW1_figures/">Figures</a>
-    </article>
-    <article class="wide">
-      <h2>Coding assignment</h2>
-      <p>Order-agnostic MADE and a class-conditional gated PixelCNN. Each row below is one digit class. The supplied CNN reads 91 of these 100 samples as the class they were conditioned on.</p>
-      <figure>
-        <img src="CHW-1/outputs/conditional_samples.png" alt="Ten by ten grid of generated MNIST digits, one class per row">
-        <figcaption>Class-conditional samples from the fine-tuned PixelCNN. <a href="CHW-1/">Code, notebook, and checkpoints</a>.</figcaption>
-      </figure>
+      <h2>Homework 1</h2>
+      <p>Gaussians, Monte Carlo, graphs, autoregressive networks, and a MADE / PixelCNN coding task.</p>
+      <a href="hw1/">Open Homework 1</a>
     </article>
   </div>
   <p class="footer">Semester folder: <a href="https://github.com/AliNikkhah2001/MSc_Fall_2026">MSc_Fall_2026</a>. Degree folder: <a href="https://github.com/AliNikkhah2001/AI_MSc">AI_MSc</a>.</p>
-</main>
+</div>
 </body>
 </html>

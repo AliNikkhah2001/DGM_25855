@@ -6,25 +6,19 @@ It sits inside the semester repository as a submodule:
 
 `AI_MSc` → `MSc_Fall_2026` → `DGM_25855`
 
-## Homework 1
+## Site
 
-The site root is a GitHub Pages index. Open the published page, or start from `index.html` locally.
+GitHub Pages serves three levels. Later assignments are new folders, not edits to Homework 1.
 
-| | |
+| Page | Path |
 |---|---|
-| Study sheet | [HW1_study.html](HW1_study.html) |
-| Teaching guide (PDF) | [HW1_tutorial.pdf](HW1_tutorial.pdf) |
-| Teaching guide (LaTeX) | [HW1_tutorial.tex](HW1_tutorial.tex) |
-| Written solutions | [HW1_solutions.md](HW1_solutions.md) |
-| Checked against the lectures | [HW1_validated.md](HW1_validated.md) |
-| Figures | [HW1_figures](HW1_figures) |
-| Coding assignment | [CHW-1](CHW-1) |
+| Course home | [index.html](index.html) |
+| Homework list | [homeworks/](homeworks/index.html) |
+| Homework 1 | [hw1/](hw1/index.html) |
 
-`HW1_katex/` is the local KaTeX used by the study sheet, so the page renders without a network fetch.
+Homework 1 contains the study sheet, the teaching PDF and its LaTeX, the written solutions, the lecture check, the figures, and the coding assignment in `hw1/chw1/`. Shared KaTeX lives in `assets/katex/` so another homework page can use the same fonts.
 
-## Coding assignment
-
-`CHW-1/` is order-agnostic MADE and a class-conditional gated PixelCNN, trained on Apple MPS. See [CHW-1/README.md](CHW-1/README.md). MNIST is downloaded on first run and is not stored here. TensorBoard event files are local run logs and are not stored here.
+To add a homework: create `hwN/index.html` with the same navigation, put that assignment’s files in `hwN/`, and add a card on `homeworks/index.html`.
 
 ## Clone
 
