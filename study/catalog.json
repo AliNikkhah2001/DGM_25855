@@ -1,0 +1,11 @@
+{
+  "guides": [
+    {
+      "id": "hw1-hw2",
+      "title": "Homework 1 and 2 theory guide",
+      "summary": "Definitions, derivations, diagrams, and short practice problems for the mathematics used in Homework 1 and Homework 2.",
+      "pdf": "dgm-theory-guide.pdf",
+      "manifest": "guides/hw1-hw2/manifest.json"
+    }
+  ]
+}

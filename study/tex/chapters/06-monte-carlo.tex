@@ -1,0 +1,32 @@
+\chapter{Monte Carlo}
+\label{ch:mc}
+
+\section{The sample average}
+
+\begin{defbox}
+If $x^{(1)},\ldots,x^{(N)}$ are drawn independently from $p$, the Monte Carlo estimator of $\E_p[f]$ is
+\[
+\hat f_N=\frac1N\sum_{n=1}^N f(x^{(n)}).
+\]
+It is unbiased. If $\mathrm{Var}_p(f)=\sigma_f^2<\infty$, then $\mathrm{Var}(\hat f_N)=\sigma_f^2/N$.
+\end{defbox}
+
+\begin{intbox}
+Unbiased means the average of the estimator, over datasets of samples, equals the integral. It does not mean one sample is exact. The error typically shrinks like $1/\sqrt{N}$, because the standard deviation is $\sigma_f/\sqrt{N}$. Lecture~2, slides~34--35, and Homework~1, problem~2, turn that variance into a sample size through Chebyshev or a Chernoff bound. Chebyshev uses only the variance. A Chernoff bound uses the moment generating function and can demand fewer samples while remaining a guarantee.
+\end{intbox}
+
+\section{Importance sampling}
+
+When draws from $p$ are unavailable, draw $x\sim q$ instead and correct the weight:
+\[
+\E_p[f]=\E_q\Bigl[f(x)\frac{p(x)}{q(x)}\Bigr],
+\]
+provided $q$ is positive wherever $p f$ is nonzero. The weight $p/q$ is the importance weight. The estimator is unbiased for any such $q$. Its variance is small when $q$ is large where $\lvert f\rvert p$ is large, and it is huge when $q$ is tiny on that set.
+
+\begin{pitbox}
+Lecture~4, slides~23--29, shows a proposal that misses the posterior mass. The likelihood estimator then has rare enormous weights. The ELBO replaces that high-variance estimator by a bound whose gap is exactly a KL. You give up unbiasedness of the likelihood and gain a gradient you can train.
+\end{pitbox}
+
+\section{Perplexity}
+
+For a discrete model, perplexity is $\exp\bigl(-\E_{x\sim p_{\mathrm{data}}}\log p_\theta(x)\bigr)$, or the same expression with the average over a finite test set. It is an exponential of a cross-entropy. Jensen applied to the exponential, or a bias expansion of the logarithm of an average, shows that a naive plug-in can be biased. Homework~1 asks for that expansion. The point to remember is that the log of an average is not the average of the logs.

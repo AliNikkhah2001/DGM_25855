@@ -1,0 +1,121 @@
+\documentclass[11pt]{report}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\let\openbox\relax
+\usepackage{newpxtext,newpxmath}
+\usepackage{microtype}
+\usepackage{setspace}
+\setstretch{1.12}
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+\usepackage{booktabs,array,tabularx,longtable}
+\usepackage{enumitem}
+\setlist{itemsep=0.35em,topsep=0.4em}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,fit,backgrounds}
+
+\usepackage[most]{tcolorbox}
+
+\definecolor{ink}{HTML}{1C1915}
+\definecolor{muted}{HTML}{5C564C}
+\definecolor{paper}{HTML}{FBF8F2}
+\definecolor{rule}{HTML}{E0D5C4}
+\definecolor{burgundy}{HTML}{8D3B2E}
+\definecolor{burgundysoft}{HTML}{F6EBE7}
+\definecolor{navy}{HTML}{1F4E79}
+\definecolor{navysoft}{HTML}{E7F0F7}
+\definecolor{teal}{HTML}{1D6A5A}
+\definecolor{tealsoft}{HTML}{E5F4EF}
+\definecolor{amber}{HTML}{8A5A12}
+\definecolor{ambersoft}{HTML}{FBF3E4}
+\definecolor{plum}{HTML}{5C3D6E}
+\definecolor{plumsoft}{HTML}{F3ECF6}
+\definecolor{slate}{HTML}{3E4A59}
+
+\pagecolor{paper}
+\color{ink}
+
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=burgundy,
+  citecolor=navy,
+  urlcolor=navy,
+  pdftitle={Theory guide for Deep Generative Models, Homeworks 1 and 2},
+  pdfauthor={Study notes for course 25732-1}
+}
+
+\newtcolorbox{defbox}[1][]{%
+  breakable, enhanced, colback=navysoft, colframe=navy,
+  coltitle=white, fonttitle=\bfseries, title={Definition\ifstrempty{#1}{}{: #1}},
+  arc=2pt, boxrule=0.7pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{resultbox}[1][]{%
+  breakable, enhanced, colback=burgundysoft, colframe=burgundy,
+  coltitle=white, fonttitle=\bfseries, title={Result\ifstrempty{#1}{}{: #1}},
+  arc=2pt, boxrule=0.7pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{intbox}[1][]{%
+  breakable, enhanced, colback=tealsoft, colframe=teal,
+  coltitle=white, fonttitle=\bfseries, title={Intuition\ifstrempty{#1}{}{: #1}},
+  arc=2pt, boxrule=0.7pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{practbox}[1][]{%
+  breakable, enhanced, colback=ambersoft, colframe=amber,
+  coltitle=white, fonttitle=\bfseries, title={Practice\ifstrempty{#1}{}{: #1}},
+  arc=2pt, boxrule=0.7pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{solbox}[1][]{%
+  breakable, enhanced, colback=plumsoft, colframe=plum,
+  coltitle=white, fonttitle=\bfseries, title={Worked solution\ifstrempty{#1}{}{: #1}},
+  arc=2pt, boxrule=0.7pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{pitbox}[1][]{%
+  breakable, enhanced, colback=white, colframe=burgundy,
+  coltitle=burgundy, fonttitle=\bfseries, title={Watch out\ifstrempty{#1}{}{: #1}},
+  arc=2pt, boxrule=0.8pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  borderline west={3pt}{0pt}{burgundy}}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\KL}{\mathrm{KL}}
+\newcommand{\JS}{\mathrm{JS}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\tr}{\operatorname{tr}}
+\DeclareMathOperator{\logit}{logit}
+\newcommand{\given}{\mid}
+
+\title{\textcolor{burgundy}{Deep Generative Models}\\[0.4em]
+\large A theory guide for Homework 1 and Homework 2}
+\author{Course 25732-1 \quad Dr.\ Sajjad Amini\\
+Department of Electrical Engineering\\
+Sharif University of Technology}
+\date{Fall 2026}
+
+\begin{document}
+\maketitle
+\begin{center}
+\textcolor{muted}{Lecture numbers refer to the decks in \texttt{lectures/}.\\
+Slide numbers are the numbers printed on the slides.}
+\end{center}
+\tableofcontents
+
+\input{tex/chapters/01-how-to-use-this-guide.tex}
+\input{tex/chapters/02-probability.tex}
+\input{tex/chapters/03-matrix-calculus-and-jacobians.tex}
+\input{tex/chapters/04-divergences.tex}
+\input{tex/chapters/05-the-gaussian-family.tex}
+\input{tex/chapters/06-monte-carlo.tex}
+\input{tex/chapters/07-autoregressive-models.tex}
+\input{tex/chapters/08-variational-autoencoders.tex}
+\input{tex/chapters/09-hierarchical-latents.tex}
+\input{tex/chapters/10-normalizing-flows.tex}
+\input{tex/chapters/11-a-short-practice-set.tex}
+\input{tex/chapters/12-references-and-slide-index.tex}
+\end{document}

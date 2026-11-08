@@ -1,0 +1,39 @@
+\chapter{A short practice set}
+\label{ch:set}
+
+These five problems chain the moves above. Write the solution before you open the box.
+
+\begin{practbox}[Set, problem A]
+Let $q=\N(0,\diag(1,e))$ and $p=\N(0,I_2)$. Compute $\KL(q\Vert p)$ from~\eqref{eq:stdkl}.
+\end{practbox}
+\begin{solbox}
+Coordinate $1$ contributes $0$. Coordinate $2$ has $\mu=0$ and $\sigma^2=e$, so $\tfrac12(e-1-\log e)=\tfrac12(e-2)$. The sum is $(e-2)/2$.
+\end{solbox}
+
+\begin{practbox}[Set, problem B]
+Show that if $p(x\given z)=p(x)$ does not depend on $z$, and $q(z)=p(z)$, then the ELBO equals $\log p(x)$.
+\end{practbox}
+\begin{solbox}
+The reconstruction term is $\E_q[\log p(x)]=\log p(x)$. The KL against the prior is zero. This is the collapsed case: the bound is tight because the latent was never used.
+\end{solbox}
+
+\begin{practbox}[Set, problem C]
+Give the inverse and the log-absolute-determinant of $y_1=h_1$, $y_2=h_2 e^{h_1}+h_1^2$.
+\end{practbox}
+\begin{solbox}
+$h_1=y_1$ and $h_2=(y_2-y_1^2)e^{-y_1}$. The Jacobian is triangular with diagonal $(1, e^{h_1})$, so the log-absolute-determinant is $h_1=y_1$.
+\end{solbox}
+
+\begin{practbox}[Set, problem D]
+On the bin $[0,1)$, let $p(x+u)=c\,e^{u}$ for $u\in[0,1)$, with $c$ chosen so that you do not need its value. Is uniform dequantization tight?
+\end{practbox}
+\begin{solbox}
+No. Tightness needs $p(x+u)$ constant in $u$. Here it grows with $u$. The optimal $q$ is proportional to $e^{u}$ on the bin.
+\end{solbox}
+
+\begin{practbox}[Set, problem E]
+A $1\times 1$ convolution uses $W=\begin{psmallmatrix}0&1\\1&0\end{psmallmatrix}$ on a $3\times 4$ feature map with $2$ channels. Compute $\log\lvert\det J\rvert$.
+\end{practbox}
+\begin{solbox}
+$W$ is a permutation, so $\lvert\det W\rvert=1$ and the log-determinant is zero. The spatial factor $HW=12$ multiplies zero. Permutations mix channels and do not change volume. Glow's learned diagonal $s$ is what changes volume.
+\end{solbox}

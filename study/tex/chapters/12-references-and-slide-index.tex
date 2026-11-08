@@ -1,0 +1,26 @@
+\chapter*{References and slide index}
+\addcontentsline{toc}{chapter}{References and slide index}
+
+The lectures are the primary source. The books and papers below are the ones named on Lecture~0, slide~12, on Lecture~5, slide~84, and in the homework sheets.
+
+\begin{itemize}[leftmargin=1.2em]
+\item Sajjad Amini, Deep Generative Models lecture decks. Lecture~2, slides 12--42, for densities, expectation, Monte Carlo, and KL. Lecture~3 for autoregressive models and MADE. Lecture~4, slides 12--40, 56--64, and 77--84, for the ELBO and the reparameterization trick. Lecture~5, slides 3--73, for change of variables, NICE, RealNVP, and MAF.
+\item Kevin P.\ Murphy, \emph{Probabilistic Machine Learning: Advanced Topics}, MIT Press, 2023. Chapter~10 for variational inference, Chapter~11 for Monte Carlo and importance sampling, Chapter~21 for variational autoencoders, Chapter~23 for normalizing flows.
+\item Jakub M.\ Tomczak, \emph{Deep Generative Modeling}, Springer. Section~4.1.2 for the change of variables, \S4.1.3 for RealNVP and dequantization, \S5.3 for the VAE, \S5.3.6 for posterior collapse, \S5.4.1.4 for a mixture prior, \S5.4.1.8 for a flow prior, \S5.5.2.1 for a two-level hierarchical VAE.
+\item Christopher M.\ Bishop and Hugh Bishop, \emph{Deep Learning: Foundations and Concepts}, Springer, 2023. The third book listed on the logistics slide.
+\item D.\ P.\ Kingma and M.\ Welling, Auto-Encoding Variational Bayes, ICLR 2014.
+\item D.\ P.\ Kingma and M.\ Welling, An Introduction to Variational Autoencoders, \emph{Foundations and Trends in Machine Learning}, 2019.
+\item K.\ Sohn, H.\ Lee, and X.\ Yan, Learning Structured Output Representation using Deep Conditional Generative Models, NeurIPS 2015.
+\item C.\ K.\ S{\o}nderby, T.\ Raiko, L.\ Maal{\o}e, S.\ K.\ S{\o}nderby, and O.\ Winther, Ladder Variational Autoencoders, NeurIPS 2016.
+\item D.\ J.\ Rezende and S.\ Mohamed, Variational Inference with Normalizing Flows, ICML 2015.
+\item L.\ Dinh, D.\ Krueger, and Y.\ Bengio, NICE: Non-linear Independent Components Estimation, 2015.
+\item L.\ Dinh, J.\ Sohl-Dickstein, and S.\ Bengio, Density Estimation using Real NVP, ICLR 2017.
+\item G.\ Papamakarios, T.\ Pavlakou, and I.\ Murray, Masked Autoregressive Flow for Density Estimation, NeurIPS 2017.
+\item D.\ P.\ Kingma and P.\ Dhariwal, Glow: Generative Flow with Invertible $1\times 1$ Convolutions, NeurIPS 2018.
+\item J.\ Ho, X.\ Chen, A.\ Srinivas, Y.\ Duan, and P.\ Abbeel, Flow++: Improving Flow-Based Generative Models with Variational Dequantization and Architecture Design, ICML 2019.
+\item M.\ Germain, K.\ Gregor, I.\ Murray, and H.\ Larochelle, MADE: Masked Autoencoder for Distribution Estimation, ICML 2015.
+\end{itemize}
+
+\begin{intbox}[A path through the two homeworks]
+Read Chapters~\ref{ch:prob}--\ref{ch:info} once. Do Homework~1's Gaussian and divergence problems from Chapters~\ref{ch:gauss} and~\ref{ch:mc}, and the autoregressive problems from Chapter~\ref{ch:ar}. Then read Chapter~\ref{ch:vae} and write the conditional ELBO before you train the VAE notebook. Read Chapter~\ref{ch:hier} before problem~2. Read the coupling section of Chapter~\ref{ch:flow} before problems~3, 4, and~5, and before the flow notebook. Do the notebook's color-transfer section first. It is the two-dimensional MAF.
+\end{intbox}

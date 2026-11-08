@@ -1,0 +1,42 @@
+<section class="chapter" id="matrix-calculus-and-jacobians">
+<h2>Matrix calculus and Jacobians</h2>
+<p>Generative models differentiate scalars with respect to vectors and matrices. This chapter fixes the conventions and derives the four derivatives the homeworks need: a linear form, a quadratic form, a log-determinant, and a Jacobian determinant.</p>
+<h3>Layout</h3>
+<p>A scalar \(L(\theta)\) has a gradient \(\nabla_\theta L\) that is a column vector of the same shape as \(\theta\). The differential is the inner product
+\[dL=\langle \nabla_\theta L,  d\theta\rangle.\]
+If \(\theta\) is a matrix, the inner product is the Frobenius product \(\langle A,B\rangle=\operatorname{tr}(A^\top B)\). This is the layout used below. It matches the chain rule in coordinates.</p>
+<aside class="box result"><p class="box-title">Result: Linear and quadratic forms</p><p>Let \(a\in\mathbb{R}^d\) be constant and let \(A\in\mathbb{R}^{d\times d}\) be constant. Then
+\[\begin{aligned}
+\nabla_x (a^\top x)&amp;=a,\\
+\nabla_x (x^\top A x)&amp;=(A+A^\top)x.
+\end{aligned}\]
+If \(A\) is symmetric, the second gradient is \(2Ax\). In particular \(\nabla_x \|x\|^2=2x\) and \(\nabla_x \frac12\|x\|^2=x\).</p></aside>
+<aside class="box intuition"><p class="box-title">Intuition</p><p>The factor \(2\) is the usual one from \((x^2)'=2x\). People drop it when they differentiate \(\frac12 x^\top \Sigma^{-1}x\), because the \(\frac12\) cancels the \(2\). Gaussian exponents are written with that \(\frac12\) for this reason.</p></aside>
+<h3>Trace and log-determinant</h3>
+<aside class="box result"><p class="box-title">Result: Derivatives in the matrix</p><p>For constant \(B\) and invertible \(A\),
+\[\begin{aligned}
+\nabla_A \operatorname{tr}(A^\top B)&amp;=B,\\
+\nabla_A \log|\det A|&amp;=A^{-\top}.
+\end{aligned}\]
+The second identity is the matrix calculus behind Glow. If \(W\) depends on a diagonal vector \(s\) only through \(W=\operatorname{diag}(s)\), then
+\[\frac{\partial}{\partial s_i}\log|\det W|=\frac{1}{s_i}
+\quad\text{when }s_i\neq 0,\]
+and the gradient of \(\sum_i\log| s_i|\) is the vector \((1/s_i)\).</p></aside>
+<p>A short derivation of the log-determinant: \(\det(A+dA)=\det(A)\det(I+A^{-1}dA)\), and \(\det(I+H)=1+\operatorname{tr}(H)+o(\|H\|)\). Therefore
+\[d\log|\det A|=\operatorname{tr}(A^{-1} dA)=\langle A^{-\top},  dA\rangle.\]</p>
+<h3>Jacobians and the change-of-variables factor</h3>
+<p>Let \(f:\mathbb{R}^D\to\mathbb{R}^D\) be continuously differentiable and invertible, with differentiable inverse, and with \(J_f(u)\) invertible at the points we use. If \(u\) has density \(p_0\) and \(y=f(u)\), then \(y\) has density
+\[
+p(y)=p_0(f^{-1}(y)) |\det J_{f^{-1}}(y)|
+=p_0(u) |\det J_f(u)|^{-1}.\]
+In logarithms, with \(u=f^{-1}(y)\),
+\[\log p(y)=\log p_0(u)-\log|\det J_f(u)|.\]</p>
+<aside class="box intuition"><p class="box-title">Intuition: Why the absolute value</p><p>A reflection \(f(u)=-u\) preserves probability but has Jacobian \(-1\). Densities are nonnegative, so the volume factor is the absolute value of the determinant. On a triangular matrix the determinant is the product of the diagonal entries, which is why coupling layers are easy.</p></aside>
+<aside class="box result"><p class="box-title">Result: Triangular determinant</p><p>If \(L\) is lower triangular with ones on the diagonal, \(\det L=1\). If \(U\) is strictly upper triangular, then \(U+\operatorname{diag}(s)\) is upper triangular with diagonal \(s\), and \(\det(U+\operatorname{diag}(s))=\prod_i s_i\). A permutation matrix \(P\) has \(\det P=\pm 1\). Hence if \(W=PL(U+\operatorname{diag}(s))\),
+\[\log|\det W|=\sum_{i=1}^{C}\log| s_i|.\]</p></aside>
+<aside class="box practice"><p class="box-title">Practice: A \(2\times 2\) Jacobian</p><p>Let \(f(u_1,u_2)=(u_1,  u_2+u_1^2)\). Compute \(J_f\), its determinant, and the density of \(y=f(u)\) when \(u\sim\mathcal{N}(0,I_2)\).</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>\[J_f(u)=\begin{pmatrix}1&amp;0\\ 2u_1&amp;1\end{pmatrix},\qquad \det J_f=1.\]
+The map is a shear. It preserves volume, so \(\log p(y)=\log p_0(f^{-1}(y))\). The inverse is \((y_1,  y_2-y_1^2)\), and
+\[p(y)=(2\pi)^{-1}\exp\left(-\frac12 y_1^2-\frac12(y_2-y_1^2)^2\right).\]
+This is the map in Homework 2, problem 3.2. It will return there as a counterexample to a diagonal-Gaussian restriction.</p></aside>
+</section>

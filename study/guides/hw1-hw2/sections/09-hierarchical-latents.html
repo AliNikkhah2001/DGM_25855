@@ -1,0 +1,42 @@
+<section class="chapter" id="hierarchical-latents">
+<h2>Hierarchical latents</h2>
+<p>One latent layer can be too weak a prior. A two-layer model draws a coarse code and then a fine code:
+\[p_\theta(x,z_1,z_2)=p_\theta(z_2) p_\theta(z_1\mid z_2) p_\theta(x\mid z_1),\]
+with the conditional independence \(x\perp z_2\mid z_1\). The variational family used in the homework respects the same order,
+\[q_\phi(z_1,z_2\mid x)=q_\phi(z_2\mid x) q_\phi(z_1\mid z_2,x).\]</p>
+<figure class="diagram" aria-hidden="true"></figure>
+<h3>The hierarchical ELBO</h3>
+<p>Apply  to the pair \((z_1,z_2)\). The gap is
+\[\log p_\theta(x)-\mathcal L_H(x)
+=\mathrm{KL}\left(q(z_1,z_2\mid x)\| p(z_1,z_2\mid x)\right).\]
+Expand the joint and the variational factorizations. The cross terms separate into three pieces:
+\[\begin{aligned}
+\mathcal L_H(x)
+&amp;=\mathbb{E}_{q(z_1,z_2\mid x)}[\log p(x\mid z_1)]
+-\mathrm{KL}\left(q(z_2\mid x)\| p(z_2)\right)\\
+&amp;\quad-\mathbb{E}_{q(z_2\mid x)}\left[\mathrm{KL}\left(q(z_1\mid z_2,x)\| p(z_1\mid z_2)\right)\right].
+\end{aligned}\]
+The inner KL is averaged under \(q(z_2\mid x)\) because \(z_2\) is still random when that conditional KL is evaluated. You draw the coarse code from the approximate posterior, then score the fine code.</p>
+<h3>Comparison with a one-layer bound</h3>
+<p>Let \(q(z_1\mid x)\) be the marginal of the variational joint, and define the ordinary ELBO that uses only \(z_1\),
+\[\mathcal L_M(x)
+=\mathbb{E}_{q(z_1\mid x)}[\log p(x\mid z_1)]
+-\mathrm{KL}\left(q(z_1\mid x)\| p(z_1)\right).\]
+A second KL decomposition, this time of \(q(z_2\mid z_1,x)\) against \(p(z_2\mid z_1)\), yields
+\[\mathcal L_H(x)
+=\mathcal L_M(x)
+-\mathbb{E}_{q(z_1\mid x)}\left[\mathrm{KL}\left(q(z_2\mid z_1,x)\| p(z_2\mid z_1)\right)\right].\]
+The subtracted term is nonnegative, so \(\mathcal L_H\le\mathcal L_M\). Equality holds if and only if \(q(z_2\mid z_1,x)=p(z_2\mid z_1)\) almost everywhere. For a fixed marginal \(q(z_1\mid x)\), that conditional is exactly the one that maximizes \(\mathcal L_H\).</p>
+<p>The marginal prior \(p(z_1)=\int p(z_1\mid z_2)p(z_2) dz_2\) may have no closed form. For an arbitrary positive auxiliary \(r(z_2\mid z_1)\),
+\[\begin{aligned}
+\log p(z_1)
+&amp;=\mathbb{E}_{r}[\log p(z_1\mid z_2)]-\mathrm{KL}(r(z_2\mid z_1)\| p(z_2))\\
+&amp;\quad+\mathrm{KL}(r(z_2\mid z_1)\| p(z_2\mid z_1)).
+\end{aligned}\]
+Drop the last KL, which is nonnegative, and you have a lower bound. The bound is an equality when \(r=p(z_2\mid z_1)\). Therefore
+\[\log p(z_1)
+=\sup_r\left\{\mathbb{E}_r[\log p(z_1\mid z_2)]-\mathrm{KL}(r\| p(z_2))\right\},\]
+and the supremum is attained at the true conditional. This is the same ``gap equals a KL'' pattern as .</p>
+<aside class="box practice"><p class="box-title">Practice</p><p>In the decomposition of \(\mathcal L_H\), why is the fine-code KL inside an expectation over \(q(z_2\mid x)\), rather than evaluated at a single \(z_2\)?</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>The KL \(\mathrm{KL}(q(z_1\mid z_2,x)\| p(z_1\mid z_2))\) is a function of \(z_2\). The variational joint draws \(z_2\) from \(q(z_2\mid x)\) before drawing \(z_1\). Taking the expectation is what the joint KL produces when you integrate that coordinate. Freezing one \(z_2\) would describe a different, degenerate inference distribution.</p></aside>
+</section>

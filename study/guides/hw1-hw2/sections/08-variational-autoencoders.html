@@ -1,0 +1,71 @@
+<section class="chapter" id="variational-autoencoders">
+<h2>Variational autoencoders</h2>
+<h3>The model</h3>
+<p>A latent-variable model says that each observation \(x\) was produced by a hidden \(z\):
+\[p_\theta(x,z)=p_\theta(x\mid z) p_\theta(z),\qquad
+p_\theta(x)=\int p_\theta(x\mid z) p_\theta(z) dz.\]
+Generation draws \(z\) from the prior and then \(x\) from the decoder. The integral is the obstacle. It is the marginal likelihood.</p>
+<figure class="diagram" aria-hidden="true"></figure>
+<p>For a conditional model the sheet adds a variable \(u\), for example a digit label:
+\[p_\theta(x,z\mid u)=p_\theta(x\mid z,u) p_\theta(z\mid u).\]
+Every derivation below is the unconditional one with \(u\) written next to \(x\). The pictures gain arrows from \(u\) into the prior and into the decoder.</p>
+<h3>Two derivations of the ELBO</h3>
+<p>Fix a density \(q(z)\) that does not depend on \(\theta\), positive wherever the posterior is. The marginal is an expectation under \(q\):
+\[p_\theta(x)=\mathbb{E}_{z\sim q}\left[\frac{p_\theta(x,z)}{q(z)}\right].\]
+Apply \(\log\) and Jensen. The logarithm is concave, so
+\[
+\log p_\theta(x)
+\ge
+\mathbb{E}_{z\sim q}\left[\log\frac{p_\theta(x,z)}{q(z)}\right]
+=:\mathcal L(x;\theta,q).\]
+The right-hand side is the evidence lower bound.</p>
+<p>The second derivation starts from the KL between \(q\) and the true posterior \(p_\theta(z\mid x)=p_\theta(x,z)/p_\theta(x)\):
+\[\begin{aligned}
+\mathrm{KL}(q(z)\| p_\theta(z\mid x))
+&amp;=\mathbb{E}_q\left[\log q(z)-\log p_\theta(x,z)+\log p_\theta(x)\right]\\
+&amp;=\log p_\theta(x)-\mathbb{E}_q\left[\log\frac{p_\theta(x,z)}{q(z)}\right].
+\end{aligned}\]
+Rearrangement is the identity on Lecture 4, slides 38–39,
+\[
+\log p_\theta(x)=\mathcal L(x;\theta,q)+\mathrm{KL}\left(q(z)\| p_\theta(z\mid x)\right).\]
+Nonnegativity of KL gives \(\mathcal L\le\log p_\theta(x)\). The gap is zero if and only if \(q(z)=p_\theta(z\mid x)\) almost everywhere.</p>
+<aside class="box intuition"><p class="box-title">Intuition</p><p>Jensen moves the log inside and produces a bound. The KL identity explains the gap. When you write Homework 2, problem 1.1, do both, and insert \(u\) into \(p(x,z\mid u)\) and \(q(z\mid x,u)\). Equality is the sentence ``KL is zero only when the densities agree.''</p></aside>
+<h3>Reconstruction minus KL</h3>
+<p>Expand \(p(x,z)=p(x\mid z)p(z)\) inside the ELBO:
+\[\begin{aligned}
+\mathcal L
+&amp;=\mathbb{E}_q[\log p_\theta(x\mid z)+\log p_\theta(z)-\log q(z)]\\
+&amp;=\mathbb{E}_q[\log p_\theta(x\mid z)]-\mathrm{KL}\left(q(z)\| p_\theta(z)\right).
+\end{aligned}\]
+The first term rewards a decoder that regenerates \(x\) from the latent the encoder proposed. The second term penalizes an encoder that wanders away from the prior. For the conditional model,
+\[
+\mathcal L(\theta,\phi;x,u)
+=\mathbb{E}_{q_\phi(z\mid x,u)}[\log p_\theta(x\mid z,u)]
+-\mathrm{KL}\left(q_\phi(z\mid x,u)\| p_\theta(z\mid u)\right).\]</p>
+<aside class="box watch"><p class="box-title">Watch out: Posterior collapse</p><p>Suppose \(q(z\mid x,u)=p(z\mid u)\). The KL term in  is zero. The gap that remains is
+\[\log p(x\mid u)-\mathcal L
+=\log\mathbb{E}_{p(z\mid u)}[p(x\mid z,u)]
+-\mathbb{E}_{p(z\mid u)}[\log p(x\mid z,u)].\]
+That is Jensen's gap for the random variable \(p(x\mid z,u)\) as \(z\) varies. It is strictly positive unless \(p(x\mid z,u)\) does not depend on \(z\).</p>
+<p>If the decoder ignores \(z\), so that \(p(x\mid z,u)=p(x\mid u)\), Bayes' rule gives \(p(z\mid x,u)=p(z\mid u)\). Matching the encoder to the prior then makes both the KL and the gap vanish. The latent carries no information about \(x\). That is posterior collapse. The bound is tight and useless.</p></aside>
+<h3>The reparameterization trick</h3>
+<p>The KL in  has a gradient in closed form. The reconstruction term does not. A score-function estimator differentiates through \(\log q\) and has high variance. The reparameterization writes the sample as a deterministic function of the parameters and of noise that does not depend on them:
+\[\varepsilon\sim\mathcal{N}(0,I),\qquad
+z=\mu_\phi(x)+\sigma_\phi(x)\odot\varepsilon,\]
+where \(\sigma=\exp(\frac12\log\sigma^2)\) if the network emits a log-variance. Because \(\varepsilon\) is standard normal, \(z\) is exactly \(\mathcal{N}(\mu,\operatorname{diag}(\sigma^2))\).</p>
+<p>A Monte Carlo reconstruction objective with one sample is
+\[\widehat{\mathcal L}_{\mathrm{rec}}(\phi)
+=\log p_\theta\left(x\mid \mu_\phi+\sigma_\phi\odot\varepsilon\right).\]
+The chain rule is
+\[\nabla_\phi \widehat{\mathcal L}_{\mathrm{rec}}
+=\frac{\partial\log p_\theta}{\partial z}
+\left(
+\frac{\partial\mu}{\partial\phi}
++\varepsilon\odot\frac{\partial\sigma}{\partial\phi}
+\right).\]
+Differentiate through the sample, not through a density score. Lecture 4, slides 60–64, is this argument.</p>
+<figure class="diagram" aria-hidden="true"></figure>
+<p>For images in the notebook the decoder outputs Bernoulli logits, one per pixel. The reconstruction term is a binary cross-entropy with logits, summed over pixels and averaged over the batch. Do not apply a sigmoid before that loss. The sigmoid sits inside the stable implementation of the cross-entropy. With \(\beta=1\) the training objective per image is that cross-entropy plus the KL in .</p>
+<aside class="box practice"><p class="box-title">Practice: Check the transform</p><p>Let \(\varepsilon\sim\mathcal{N}(0,1)\), \(\mu=2\), \(\sigma=3\). Find \(\mathbb{E}[z]\) and \(\mathrm{Var}(z)\) for \(z=\mu+\sigma\varepsilon\). Then compute \(\partial z/\partial\mu\) and \(\partial z/\partial\sigma\).</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>\(\mathbb{E}[z]=2\) and \(\mathrm{Var}(z)=9\), so \(z\sim\mathcal{N}(2,9)\). The partial derivatives are \(\partial z/\partial\mu=1\) and \(\partial z/\partial\sigma=\varepsilon\). A loss \(L(z)\) therefore has \(\partial L/\partial\sigma=L'(z) \varepsilon\).</p></aside>
+</section>

@@ -1,0 +1,60 @@
+\chapter{Probability}
+\label{ch:prob}
+
+\section{Events, variables, and densities}
+
+\begin{defbox}[Density and mass]
+A discrete random variable $X$ has a probability mass function $p(x)\ge 0$ with $\sum_x p(x)=1$. A continuous random variable on $\R^d$ has a density $p(x)\ge 0$ with $\int p(x)\,dx=1$. The density is not a probability. $p(x)$ can exceed $1$. The probability of a set $A$ is $\int_A p(x)\,dx$.
+\end{defbox}
+
+\begin{intbox}
+Think of a density as height and a probability as area. A very narrow bump can be very tall and still have area one. This is why, later, the flow density $p_\theta(x)$ at an integer pixel is not the probability of that pixel.
+\end{intbox}
+
+The joint density $p(x,z)$ describes the pair. The marginal of $x$ sums or integrates the other variable out,
+\[
+p(x)=\int p(x,z)\,dz.
+\]
+The conditional is the joint divided by the marginal, when the marginal is positive:
+\[
+p(z\given x)=\frac{p(x,z)}{p(x)},\qquad p(x,z)=p(x\given z)\,p(z).
+\]
+The second display is the chain rule. It is the only legal way to build a joint from conditionals on a directed graph: each node is conditioned on its parents, and the graph is acyclic.
+
+\begin{resultbox}[Bayes]
+\[
+p(z\given x)=\frac{p(x\given z)\,p(z)}{p(x)}.
+\]
+The denominator is the marginal likelihood. In a latent-variable model it is the integral that the ELBO avoids computing.
+\end{resultbox}
+
+\section{Expectation, variance, and Jensen}
+
+\begin{defbox}[Expectation]
+For a function $f$ and a density $p$,
+\[
+\E_{x\sim p}[f(x)]=\int f(x)\,p(x)\,dx,
+\]
+when the integral exists. Linearity holds even if the coordinates of $x$ are dependent: $\E[a^\top x]=a^\top\E[x]$.
+\end{defbox}
+
+Variance is $\mathrm{Var}(f)=\E[f^2]-(\E f)^2$. For a sum of independent random variables the variances add. They do not add when the variables share randomness. That fact is the whole of the importance-sampling variance story: a bad proposal makes $f\,p/q$ wildly dependent on the draw.
+
+\begin{resultbox}[Jensen]
+If $\psi$ is concave and the expectations exist, then $\psi(\E[X])\ge \E[\psi(X)]$. The logarithm is concave, so
+\[
+\log \E[X]\ge \E[\log X].
+\]
+Equality holds when $X$ is almost surely constant, or more generally when $\psi$ is affine on the range of $X$.
+\end{resultbox}
+
+\begin{intbox}
+Jensen is the reason a lower bound appears every time a logarithm moves inside an expectation. Lecture~4, slide~34, writes exactly this for $\psi=\log$. Homework~2 uses it twice: once for the ELBO, and once for variational dequantization.
+\end{intbox}
+
+\begin{practbox}[A one-line Jensen gap]
+Let $Z\in\{0,1\}$ with equal probability, and let $f(0)=1$, $f(1)=e$. Compare $\log\E[f(Z)]$ with $\E[\log f(Z)]$.
+\end{practbox}
+\begin{solbox}
+$\E[f]=(1+e)/2$, so $\log\E[f]=\log(1+e)-\log 2$. And $\E[\log f]=\tfrac12\log 1+\tfrac12\log e=\tfrac12$. The gap is $\log(1+e)-\log 2-\tfrac12>0$ because $f$ is not constant.
+\end{solbox}

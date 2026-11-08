@@ -1,0 +1,29 @@
+\chapter{How to use this guide}
+\label{ch:map}
+
+This note teaches the mathematics that Homeworks 1 and 2 actually use. Each chapter states a definition, gives the intuition, derives the identity, draws the picture, and then poses a short practice problem with a worked solution. The practice problems are smaller than the homework. They train the same moves.
+
+\begin{intbox}[What to read for which homework]
+Homework 1 uses Chapters~\ref{ch:prob}--\ref{ch:ar}. Homework 2 uses those chapters and then Chapters~\ref{ch:vae}--\ref{ch:flow}. The conditional ELBO, the hierarchical ELBO, dequantization, and the Glow convolution are extensions of the lectures. Their derivations are written out here.
+\end{intbox}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{}lXl@{}}
+\toprule
+\textbf{Homework piece} & \textbf{Read} & \textbf{Slides}\\
+\midrule
+Gaussians, products, conditionals & Ch.~\ref{ch:gauss} & L2, 12--35\\
+KL, Jensen--Shannon, perplexity & Ch.~\ref{ch:info} & L2, 36--42\\
+Monte Carlo, importance sampling & Ch.~\ref{ch:mc} & L2, 34--35; L4, 23--29\\
+Markov models and autoregression & Ch.~\ref{ch:ar} & L3\\
+ELBO, reparameterization, CVAE & Ch.~\ref{ch:vae} & L4, 12--40, 56--84\\
+Two-layer hierarchical ELBO & Ch.~\ref{ch:hier} & pattern of L4, 38--39\\
+Coupling, flow prior, dequantization, Glow & Ch.~\ref{ch:flow} & L5, 3--73\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{defbox}[Notation used throughout]
+Random variables are capitals when the distinction matters, and the same letter is used for a value when the slides do so. A Gaussian $\N(x\given\mu,\sigma^2)$ has variance $\sigma^2$, matching Lecture~2. $\log$ is the natural logarithm, so information quantities are in nats. $\KL(q\Vert p)$ means we use $q$ where the reference in the denominator is $p$. The Jacobian $J_f(u)$ is the matrix of partial derivatives $\partial f_i/\partial u_j$.
+\end{defbox}

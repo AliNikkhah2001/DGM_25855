@@ -1,0 +1,14 @@
+<section class="chapter" id="a-short-practice-set">
+<h2>A short practice set</h2>
+<p>These five problems chain the moves above. Write the solution before you open the box.</p>
+<aside class="box practice"><p class="box-title">Practice: Set, problem A</p><p>Let \(q=\mathcal{N}(0,\operatorname{diag}(1,e))\) and \(p=\mathcal{N}(0,I_2)\). Compute \(\mathrm{KL}(q\| p)\) from .</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>Coordinate \(1\) contributes \(0\). Coordinate \(2\) has \(\mu=0\) and \(\sigma^2=e\), so \(\frac12(e-1-\log e)=\frac12(e-2)\). The sum is \((e-2)/2\).</p></aside>
+<aside class="box practice"><p class="box-title">Practice: Set, problem B</p><p>Show that if \(p(x\mid z)=p(x)\) does not depend on \(z\), and \(q(z)=p(z)\), then the ELBO equals \(\log p(x)\).</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>The reconstruction term is \(\mathbb{E}_q[\log p(x)]=\log p(x)\). The KL against the prior is zero. This is the collapsed case: the bound is tight because the latent was never used.</p></aside>
+<aside class="box practice"><p class="box-title">Practice: Set, problem C</p><p>Give the inverse and the log-absolute-determinant of \(y_1=h_1\), \(y_2=h_2 e^{h_1}+h_1^2\).</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>\(h_1=y_1\) and \(h_2=(y_2-y_1^2)e^{-y_1}\). The Jacobian is triangular with diagonal \((1, e^{h_1})\), so the log-absolute-determinant is \(h_1=y_1\).</p></aside>
+<aside class="box practice"><p class="box-title">Practice: Set, problem D</p><p>On the bin \([0,1)\), let \(p(x+u)=c e^{u}\) for \(u\in[0,1)\), with \(c\) chosen so that you do not need its value. Is uniform dequantization tight?</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>No. Tightness needs \(p(x+u)\) constant in \(u\). Here it grows with \(u\). The optimal \(q\) is proportional to \(e^{u}\) on the bin.</p></aside>
+<aside class="box practice"><p class="box-title">Practice: Set, problem E</p><p>A \(1\times 1\) convolution uses \(W=\begin{pmatrix}0&amp;1\\1&amp;0\end{pmatrix}\) on a \(3\times 4\) feature map with \(2\) channels. Compute \(\log|\det J|\).</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>\(W\) is a permutation, so \(|\det W|=1\) and the log-determinant is zero. The spatial factor \(HW=12\) multiplies zero. Permutations mix channels and do not change volume. Glow's learned diagonal \(s\) is what changes volume.</p></aside>
+</section>

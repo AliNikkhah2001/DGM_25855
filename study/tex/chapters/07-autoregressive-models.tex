@@ -1,0 +1,63 @@
+\chapter{Autoregressive models}
+\label{ch:ar}
+
+\section{The chain rule on a sequence}
+
+Any positive joint mass on binary strings $x\in\{0,1\}^D$ factors as
+\[
+p(x)=\prod_{d=1}^D p(x_d\given x_{<d}),
+\]
+with $x_{<1}$ empty. A fully general conditional at step $d$ is a table of size $2^{d-1}$. Summing the sizes gives $2^D-1$ free parameters, the whole probability simplex. That model can represent anything and cannot be estimated from data once $D$ is large.
+
+\begin{center}
+\begin{tikzpicture}[
+  node/.style={circle, draw=navy, thick, minimum size=8mm, inner sep=0pt, fill=navysoft},
+  arr/.style={-{Stealth[length=2.2mm]}, thick, draw=burgundy}
+]
+\node[node] (x1) {$x_1$};
+\node[node, right=12mm of x1] (x2) {$x_2$};
+\node[node, right=12mm of x2] (x3) {$x_3$};
+\draw[arr] (x1) -- (x2);
+\draw[arr] (x1) to[bend left=35] (x3);
+\draw[arr] (x2) -- (x3);
+\end{tikzpicture}
+\end{center}
+\begin{center}
+\textcolor{muted}{\small An autoregressive factorization. Each variable is conditioned only on the variables already generated.}
+\end{center}
+
+\section{FVSBN and NADE}
+
+A fully visible sigmoid belief network replaces the table by a logistic regression on the past:
+\[
+p(x_d=1\given x_{<d})=\sigma\Bigl(b_d+\sum_{k<d}W_{dk}x_k\Bigr).
+\]
+Step $d$ costs $d$ parameters, and the total is $D(D+1)/2$. The map from parameters to distributions is injective for this linear-logit family, so that count is the dimension of the model.
+
+NADE shares one hidden state across the conditionals,
+\[
+h_d=\phi\Bigl(c+\sum_{k<d}W_{:,k}x_k\Bigr),\qquad
+p(x_d=1\given x_{<d})=\sigma(v_d^\top h_d+b_d).
+\]
+Sharing $W$ makes the parameter count linear in $D$ rather than quadratic. The recurrence $a_{d+1}=a_d+W_{:,d}x_d$ evaluates every conditional without recomputing the sum from scratch. Real NADE uses the same hidden state and emits a Gaussian conditional, with mean linear in $h_d$ and variance $\exp(s_d)$.
+
+\begin{intbox}
+Likelihood of a fully observed $x$ can be computed in parallel across coordinates, because every past bit is already known. Sampling cannot. Coordinate $d$ is drawn only after coordinates $1,\ldots,d-1$ exist. Lecture~3 says this in one line, and MAF inherits it.
+\end{intbox}
+
+\section{MADE masks}
+
+MADE imposes the autoregressive constraint with binary masks so that one forward pass evaluates every conditional. Number the hidden units by the largest input index they may depend on. A hidden unit with index $m$ may read inputs of index at most $m$. An output unit for coordinate $d$ may read hidden units of index strictly less than $d$. The strict inequality at the output stops $x_d$ from depending on itself.
+
+\begin{practbox}[A mask you can draw]
+For $D=3$ and one hidden layer with indices $(1,2,2)$, say which inputs each output may use.
+\end{practbox}
+\begin{solbox}
+Output $1$ may use hidden units of index $<1$. There are none. So $p(x_1)$ is unconditional. Output $2$ may use the hidden unit of index $1$, which itself may see only $x_1$. Output $3$ may use all three hidden units, hence $x_1$ and $x_2$, and not $x_3$. That is an autoregressive family.
+\end{solbox}
+
+\section{Graphs}
+
+A directed acyclic graph defines a legal joint by multiplying one conditional per node, given its parents. A topological order is an order in which every parent appears before its child. Many orders can be legal. A directed cycle does not define a joint by the same multiplication: the conditionals refer to each other and need not be normalizable. A rooted forest is the special case in which each node has at most one parent. Markov chains are the path case, homogeneous when the conditional does not depend on time, inhomogeneous when it does.
+
+The KL projection of a full joint onto an autoregressive family is the set of conditional tables of the true joint, in that order. The KL gap equals a conditional mutual information: the information about $x_d$ that the discarded non-parents still carry. Maximum likelihood on a fully observed table estimates those conditionals by counts.

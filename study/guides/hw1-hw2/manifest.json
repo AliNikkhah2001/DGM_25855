@@ -1,0 +1,67 @@
+{
+  "id": "hw1-hw2",
+  "title": "Homework 1 and 2 theory guide",
+  "pdf": "../../dgm-theory-guide.pdf",
+  "sections": [
+    {
+      "id": "how-to-use-this-guide",
+      "title": "How to use this guide",
+      "file": "sections/01-how-to-use-this-guide.html"
+    },
+    {
+      "id": "probability",
+      "title": "Probability",
+      "file": "sections/02-probability.html"
+    },
+    {
+      "id": "matrix-calculus-and-jacobians",
+      "title": "Matrix calculus and Jacobians",
+      "file": "sections/03-matrix-calculus-and-jacobians.html"
+    },
+    {
+      "id": "divergences",
+      "title": "Divergences",
+      "file": "sections/04-divergences.html"
+    },
+    {
+      "id": "the-gaussian-family",
+      "title": "The Gaussian family",
+      "file": "sections/05-the-gaussian-family.html"
+    },
+    {
+      "id": "monte-carlo",
+      "title": "Monte Carlo",
+      "file": "sections/06-monte-carlo.html"
+    },
+    {
+      "id": "autoregressive-models",
+      "title": "Autoregressive models",
+      "file": "sections/07-autoregressive-models.html"
+    },
+    {
+      "id": "variational-autoencoders",
+      "title": "Variational autoencoders",
+      "file": "sections/08-variational-autoencoders.html"
+    },
+    {
+      "id": "hierarchical-latents",
+      "title": "Hierarchical latents",
+      "file": "sections/09-hierarchical-latents.html"
+    },
+    {
+      "id": "normalizing-flows",
+      "title": "Normalizing flows",
+      "file": "sections/10-normalizing-flows.html"
+    },
+    {
+      "id": "a-short-practice-set",
+      "title": "A short practice set",
+      "file": "sections/11-a-short-practice-set.html"
+    },
+    {
+      "id": "references-and-slide-index",
+      "title": "References and slide index",
+      "file": "sections/12-references-and-slide-index.html"
+    }
+  ]
+}

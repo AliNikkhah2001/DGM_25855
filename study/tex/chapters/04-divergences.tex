@@ -1,0 +1,81 @@
+\chapter{Divergences}
+\label{ch:info}
+
+\section{Kullback--Leibler divergence}
+
+\begin{defbox}
+For densities $p$ and $q$ with $q>0$ wherever $p>0$,
+\[
+\KL(p\Vert q)=\E_{x\sim p}\Bigl[\log\frac{p(x)}{q(x)}\Bigr]
+=\int p(x)\log\frac{p(x)}{q(x)}\,dx.
+\]
+\end{defbox}
+
+\begin{resultbox}[Properties from Lecture 2, slides 36--39]
+\begin{enumerate}[label=\arabic*.]
+\item $\KL(p\Vert q)\ge 0$.
+\item $\KL(p\Vert q)=0$ if and only if $p=q$ almost everywhere.
+\item $\KL(p\Vert q)\neq \KL(q\Vert p)$ in general.
+\item KL is not a distance: it fails symmetry and the triangle inequality.
+\item KL may be infinite when the supports disagree.
+\end{enumerate}
+\end{resultbox}
+
+The proof of nonnegativity is Jensen. Write
+\[
+-\KL(p\Vert q)=\E_p\bigl[\log(q/p)\bigr]\le \log \E_p[q/p]=\log\int q=0,
+\]
+so the KL is at least zero. Equality in Jensen holds when $q/p$ is constant on the support of $p$. Normalization forces that constant to be $1$.
+
+\begin{pitbox}[Which way the KL points]
+In a VAE the bound contains $\KL(q_\phi(z\given x)\Vert p_\theta(z))$. The first argument is the encoder, the second is the prior. Pushing that KL to zero makes the encoder match the prior, which is not the same as making the prior match the aggregated encoder. The asymmetry is the source of posterior collapse and of the off-mode mass of a Gaussian prior.
+\end{pitbox}
+
+\section{Closed-form Gaussian KL}
+
+Let $q=\N(\mu_q,\diag(\sigma_q^2))$ and $p=\N(\mu_p,\diag(\sigma_p^2))$ on $\R^d$, with every $\sigma>0$. Independence across coordinates splits the KL into a sum. In one dimension, the Gaussian density contributes
+\[
+\log q(z)=-\tfrac12\log(2\pi\sigma_q^2)-\frac{(z-\mu_q)^2}{2\sigma_q^2}.
+\]
+Taking the expectation under $q$ and subtracting the same expression for $p$ gives, after using $\E_q[(z-\mu_q)^2]=\sigma_q^2$ and $\E_q[(z-\mu_p)^2]=\sigma_q^2+(\mu_q-\mu_p)^2$,
+\begin{resultbox}[Diagonal Gaussian KL]
+\begin{equation}
+\label{eq:diagkl}
+\KL(q\Vert p)=\frac12\sum_{j=1}^{d}
+\Biggl(
+\log\frac{\sigma_{p,j}^2}{\sigma_{q,j}^2}
+-1
++\frac{\sigma_{q,j}^2+(\mu_{q,j}-\mu_{p,j})^2}{\sigma_{p,j}^2}
+\Biggr).
+\end{equation}
+Against the standard normal $p=\N(0,I)$ this collapses to
+\begin{equation}
+\label{eq:stdkl}
+\KL(q\Vert \N(0,I))=\frac12\sum_{j=1}^{d}\bigl(\mu_{q,j}^2+\sigma_{q,j}^2-1-\log\sigma_{q,j}^2\bigr).
+\end{equation}
+\end{resultbox}
+
+Equation~\eqref{eq:stdkl} is the KL implemented in the VAE notebook. Equation~\eqref{eq:diagkl} is Homework~2, problem~1.3, before that specialization.
+
+\begin{practbox}[A number you can check by hand]
+Compute $\KL(\N(0,1)\Vert \N(0,e))$ and $\KL(\N(0,e)\Vert \N(0,1))$.
+\end{practbox}
+\begin{solbox}
+Use $d=1$, $\mu=0$. First pair: $\sigma_q^2=1$, $\sigma_p^2=e$, so
+$\tfrac12(\log e-1+1/e)=\tfrac12(1-1+e^{-1})=1/(2e)$.
+Second pair: $\sigma_q^2=e$, $\sigma_p^2=1$, so
+$\tfrac12(\log e^{-1}-1+e)=\tfrac12(-1-1+e)=(e-2)/2$.
+They differ. KL is not symmetric, and the direction that puts a wide Gaussian on a narrow one is the more expensive one here.
+\end{solbox}
+
+\section{Jensen--Shannon divergence}
+
+Let $m=\tfrac12(p+q)$. Lecture~2 defines
+\[
+\JS(p\Vert q)=\tfrac12\KL(p\Vert m)+\tfrac12\KL(q\Vert m).
+\]
+JS is symmetric. In nats, $0\le \JS(p\Vert q)\le \log 2$. The upper bound $1$ on the lecture slides is the same statement in bits, where the log is base $2$. In nats the sharp cap is $\ln 2$, not $1$. $\sqrt{\JS}$ is a metric. JS itself is not, because it can violate the triangle inequality.
+
+\begin{intbox}
+KL is infinite when supports are disjoint, so it cannot compare a model that puts no mass on a point with a data distribution that does. JS stays finite because $m$ charges both supports. GANs later exploit a divergence with that behaviour. Homework~1 asks you to see the failure of KL directly.
+\end{intbox}

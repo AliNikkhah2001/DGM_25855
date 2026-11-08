@@ -1,0 +1,84 @@
+\chapter{Matrix calculus and Jacobians}
+\label{ch:calc}
+
+Generative models differentiate scalars with respect to vectors and matrices. This chapter fixes the conventions and derives the four derivatives the homeworks need: a linear form, a quadratic form, a log-determinant, and a Jacobian determinant.
+
+\section{Layout}
+
+A scalar $L(\theta)$ has a gradient $\nabla_\theta L$ that is a column vector of the same shape as $\theta$. The differential is the inner product
+\[
+dL=\langle \nabla_\theta L,\, d\theta\rangle.
+\]
+If $\theta$ is a matrix, the inner product is the Frobenius product $\langle A,B\rangle=\tr(A^\top B)$. This is the layout used below. It matches the chain rule in coordinates.
+
+\begin{resultbox}[Linear and quadratic forms]
+Let $a\in\R^d$ be constant and let $A\in\R^{d\times d}$ be constant. Then
+\begin{align*}
+\nabla_x (a^\top x)&=a,\\
+\nabla_x (x^\top A x)&=(A+A^\top)x.
+\end{align*}
+If $A$ is symmetric, the second gradient is $2Ax$. In particular $\nabla_x \|x\|^2=2x$ and $\nabla_x \tfrac12\|x\|^2=x$.
+\end{resultbox}
+
+\begin{intbox}
+The factor $2$ is the usual one from $(x^2)'=2x$. People drop it when they differentiate $\tfrac12 x^\top \Sigma^{-1}x$, because the $\tfrac12$ cancels the $2$. Gaussian exponents are written with that $\tfrac12$ for this reason.
+\end{intbox}
+
+\section{Trace and log-determinant}
+
+\begin{resultbox}[Derivatives in the matrix]
+For constant $B$ and invertible $A$,
+\begin{align*}
+\nabla_A \tr(A^\top B)&=B,\\
+\nabla_A \log\lvert\det A\rvert&=A^{-\top}.
+\end{align*}
+The second identity is the matrix calculus behind Glow. If $W$ depends on a diagonal vector $s$ only through $W=\diag(s)$, then
+\[
+\frac{\partial}{\partial s_i}\log\lvert\det W\rvert=\frac{1}{s_i}
+\quad\text{when }s_i\neq 0,
+\]
+and the gradient of $\sum_i\log\lvert s_i\rvert$ is the vector $(1/s_i)$.
+\end{resultbox}
+
+A short derivation of the log-determinant: $\det(A+dA)=\det(A)\det(I+A^{-1}dA)$, and $\det(I+H)=1+\tr(H)+o(\|H\|)$. Therefore
+\[
+d\log\lvert\det A\rvert=\tr(A^{-1}\,dA)=\langle A^{-\top},\, dA\rangle.
+\]
+
+\section{Jacobians and the change-of-variables factor}
+
+Let $f:\R^D\to\R^D$ be continuously differentiable and invertible, with differentiable inverse, and with $J_f(u)$ invertible at the points we use. If $u$ has density $p_0$ and $y=f(u)$, then $y$ has density
+\begin{equation}
+\label{eq:cov}
+p(y)=p_0(f^{-1}(y))\,\lvert\det J_{f^{-1}}(y)\rvert
+=p_0(u)\,\lvert\det J_f(u)\rvert^{-1}.
+\end{equation}
+In logarithms, with $u=f^{-1}(y)$,
+\[
+\log p(y)=\log p_0(u)-\log\lvert\det J_f(u)\rvert.
+\]
+
+\begin{intbox}[Why the absolute value]
+A reflection $f(u)=-u$ preserves probability but has Jacobian $-1$. Densities are nonnegative, so the volume factor is the absolute value of the determinant. On a triangular matrix the determinant is the product of the diagonal entries, which is why coupling layers are easy.
+\end{intbox}
+
+\begin{resultbox}[Triangular determinant]
+If $L$ is lower triangular with ones on the diagonal, $\det L=1$. If $U$ is strictly upper triangular, then $U+\diag(s)$ is upper triangular with diagonal $s$, and $\det(U+\diag(s))=\prod_i s_i$. A permutation matrix $P$ has $\det P=\pm 1$. Hence if $W=PL(U+\diag(s))$,
+\[
+\log\lvert\det W\rvert=\sum_{i=1}^{C}\log\lvert s_i\rvert.
+\]
+\end{resultbox}
+
+\begin{practbox}[A $2\times 2$ Jacobian]
+Let $f(u_1,u_2)=(u_1,\, u_2+u_1^2)$. Compute $J_f$, its determinant, and the density of $y=f(u)$ when $u\sim\N(0,I_2)$.
+\end{practbox}
+\begin{solbox}
+\[
+J_f(u)=\begin{pmatrix}1&0\\ 2u_1&1\end{pmatrix},\qquad \det J_f=1.
+\]
+The map is a shear. It preserves volume, so $\log p(y)=\log p_0(f^{-1}(y))$. The inverse is $(y_1,\, y_2-y_1^2)$, and
+\[
+p(y)=(2\pi)^{-1}\exp\bigl(-\tfrac12 y_1^2-\tfrac12(y_2-y_1^2)^2\bigr).
+\]
+This is the map in Homework~2, problem~3.2. It will return there as a counterexample to a diagonal-Gaussian restriction.
+\end{solbox}

@@ -1,0 +1,23 @@
+<section class="chapter" id="the-gaussian-family">
+<h2>The Gaussian family</h2>
+<h3>Affine images</h3>
+<aside class="box result"><p class="box-title">Result: Homework 1, the basic transform</p><p>If \(x\sim\mathcal{N}(\mu,\Sigma)\) and \(y=Ax+b\), then
+\[y\sim\mathcal{N}(A\mu+b,  A\Sigma A^\top),\]
+on the affine image of the column space. If \(A\Sigma A^\top\) is singular, \(y\) has no density on the ambient Euclidean space. It has a density on the affine hull of its support.</p></aside>
+<p>The moment proof is two lines. \(\mathbb{E}[y]=A\mu+b\) by linearity. The covariance is
+\[\mathbb{E}[(y-\mathbb{E} y)(y-\mathbb{E} y)^\top]=A \mathbb{E}[(x-\mu)(x-\mu)^\top] A^\top=A\Sigma A^\top.\]
+A Gaussian is determined by its mean and covariance, so the law is that Gaussian. The same calculation with \(A\) a row vector is the reparameterization trick in one coordinate: if \(\varepsilon\sim\mathcal{N}(0,1)\), then \(\mu+\sigma\varepsilon\sim\mathcal{N}(\mu,\sigma^2)\).</p>
+<aside class="box practice"><p class="box-title">Practice</p><p>Let \(x\sim\mathcal{N}(1,4)\) and \(y=3x-2\). Find \(\mathbb{E}[y]\) and \(\mathrm{Var}(y)\).</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>Mean \(3\cdot 1-2=1\). Variance \(3^2\cdot 4=36\). So \(y\sim\mathcal{N}(1,36)\).</p></aside>
+<h3>Conditionals and products</h3>
+<p>For a joint Gaussian, the conditional of one block given another is Gaussian. Its mean is linear in the observation, and its covariance does not depend on the observation. That is why a linear-Gaussian encoder can be written in closed form, and why a neural encoder is the nonlinear replacement of that conditional mean and variance.</p>
+<p>The product of two Gaussian densities, as a function of \(x\), is an unnormalized Gaussian whose precision (inverse covariance) is the sum of the precisions. The normalizing constant of that product is itself a Gaussian density in the difference of the means. Homework 1 asks this identity because it is Bayes' rule for a Gaussian likelihood and a Gaussian prior: posterior precision equals prior precision plus likelihood precision.</p>
+<h3>Mixtures</h3>
+<p>A mixture \(p(x)=\sum_{k=1}^K \pi_k \mathcal{N}(x\mid\mu_k,\Sigma_k)\) with \(\pi_k&gt;0\) and \(\sum_k\pi_k=1\) is nonnegative and integrates to one. Its mean is \(\sum_k\pi_k\mu_k\). Its covariance is not the mixture of the covariances alone. The law of total variance adds the covariance of the component means:
+\[\mathrm{Cov}(x)=\mathbb{E}[\mathrm{Cov}(x\mid k)]+\mathrm{Cov}(\mathbb{E}[x\mid k]).\]
+A single Gaussian cannot represent well-separated modes. A mixture can. Lecture 4, slides 3–11, uses the iris petals as the picture. The VAE notebook, part II, trains that comparison in two dimensions.</p>
+<h3>Maximum entropy</h3>
+<p>Among densities on \(\mathbb{R}^d\) with a fixed mean and a fixed covariance, the Gaussian has the largest entropy
+\[h(p)=-\int p\log p.\]
+For \(\mathcal{N}(\mu,\Sigma)\) the entropy is \(\frac{d}{2}\log(2\pi e)+\frac12\log\det\Sigma\). Subtracting two such entropies, and accounting for the cross term that appears when the means differ, is one derivation of the multivariate KL. The diagonal formula  is the coordinate form of that identity.</p>
+</section>

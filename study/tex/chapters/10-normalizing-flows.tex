@@ -1,0 +1,164 @@
+\chapter{Normalizing flows}
+\label{ch:flow}
+
+\section{Change of variables as a model}
+
+Choose a simple base $u\sim p_0=\N(0,I)$ and a stack of invertible maps $y=f(u)$. Equation~\eqref{eq:cov} gives the exact density of $y$. There is no ELBO. Training maximizes the log-density of the data, which is a base log-density plus a sum of log-absolute-determinants, one per layer. Lecture~5, slides~3--34, builds this from equivalent events up to the chain rule for Jacobians:
+\[
+\log\lvert\det J_{f_K\circ\cdots\circ f_1}\rvert
+=\sum_{k=1}^K\log\lvert\det J_{f_k}\rvert.
+\]
+
+\begin{intbox}
+A flow spends its capacity on maps whose Jacobian determinant is cheap. A generic neural network is invertible only by accident, and its determinant costs $O(D^3)$. Coupling layers, autoregressive maps, and $1\times 1$ convolutions are the designs that keep the determinant in closed form.
+\end{intbox}
+
+\section{Affine coupling}
+
+Split $h=(h_A,h_B)$ with dimensions $d_A+d_B=D$. RealNVP, Lecture~5 slides~52--64, sets
+\begin{align*}
+y_A&=h_A,\\
+y_B&=h_B\odot\exp\bigl(s(h_A)\bigr)+t(h_A).
+\end{align*}
+The functions $s$ and $t$ are ordinary neural networks. They need not be invertible.
+
+\begin{resultbox}[Homework 2, problem 4.1]
+The map is invertible:
+\begin{align*}
+h_A&=y_A,\\
+h_B&=\bigl(y_B-t(y_A)\bigr)\odot\exp\bigl(-s(y_A)\bigr).
+\end{align*}
+Order the coordinates as $(A,B)$. The Jacobian is block triangular,
+\[
+J=\begin{pmatrix}I&0\\ \ast& \diag(e^{s(h_A)})\end{pmatrix},
+\]
+so $\log\lvert\det J\rvert=\sum_{j=1}^{d_B}s_j(h_A)$. Therefore
+\[
+\log p(y)=\log p_0(f^{-1}(y))-\sum_{j=1}^{d_B}s_j(y_A).
+\]
+The networks $s$ and $t$ do not appear in the determinant. Only the scale values do. That is why a large network is allowed.
+\end{resultbox}
+
+NICE is the special case $s\equiv 0$, an additive coupling. Then $\det J=1$. A separate diagonal rescaling layer carries the change of volume. Alternating which half is updated, and inserting a permutation of channels between couplings, lets every coordinate be transformed.
+
+\begin{practbox}[Invert a $2$-D coupling by hand]
+Let $s(h_1)=\log 2$ and $t(h_1)=h_1$. Forward-map $(h_1,h_2)=(1,3)$. Then invert the result.
+\end{practbox}
+\begin{solbox}
+$y_1=1$ and $y_2=3\cdot e^{\log 2}+1=7$. The inverse reads $h_1=y_1=1$ and $h_2=(7-1)\cdot e^{-\log 2}=3$. The log-absolute-determinant of the forward map is $\log 2$.
+\end{solbox}
+
+\section{A flow as a VAE prior}
+
+Keep a decoder $p_\theta(x\given z)$ and replace the prior by a flow. Draw $u\sim\N(0,I)$, set $z=f_\psi(u)$, and let $p_\psi$ be the induced density of $z$. The ELBO is still reconstruction minus a KL,
+\[
+\mathcal L_{\theta,\psi}(x)
+=\E_{q(z\given x)}[\log p_\theta(x\given z)]
+-\KL\bigl(q(z\given x)\Vert p_\psi(z)\bigr),
+\]
+and the change of variables writes the prior log-density as
+\[
+\log p_\psi(z)=\log p_0(f^{-1}(z))-\log\lvert\det J_f(f^{-1}(z))\rvert.
+\]
+Equivalently, define a decoder on the base space by $\tilde p(x\given u)=p(x\given f(u))$. Integrating $u$ against $p_0$ gives the same marginal $p(x)$ as integrating $z$ against $p_\psi$. If $z\sim q(z\given x)$ and $u=f^{-1}(z)$, the induced density is
+\[
+r(u\given x)=q(f(u)\given x)\,\lvert\det J_f(u)\rvert,
+\]
+and $\KL(q\Vert p_\psi)=\KL(r\Vert p_0)$. The two ELBOs agree when the variational densities are exact images of each other.
+
+\begin{pitbox}[Where the equivalence dies]
+Restrict both variational families to diagonal Gaussians. Take $f(u_1,u_2)=(u_1,u_2+u_1^2)$ and $q(z)=\N(0,I_2)$. Section~\ref{ch:calc} showed that $\det J_f=1$ and that the induced density of $u=f^{-1}(z)$ is
+\[
+r(u)\propto\exp\bigl(-\tfrac12 u_1^2-\tfrac12(u_2+u_1^2)^2\bigr),
+\]
+up to the constant of the standard normal. This is not a diagonal Gaussian: the coordinates are dependent. No diagonal-Gaussian encoder in $u$-space represents $r$. Optimizing over diagonal Gaussians in $z$ and in $u$ are different problems, even though the generative models are the same.
+\end{pitbox}
+
+\section{Masked autoregressive flows}
+
+An autoregressive map with $y_d=\mu_d(y_{<d})+\sigma_d(y_{<d})\,\varepsilon_d$ is triangular. Its log-determinant is $\sum_d\log\sigma_d$. MADE masks evaluate every $\mu_d$ and $\sigma_d$ in one pass. Likelihood is parallel. Sampling remains sequential, because $y_d$ needs $y_{<d}$. That is Lecture~5, slides~65--73, and it is part~III of the flow notebook: a two-dimensional MAF on Lab chroma. An inverse autoregressive flow swaps the cost. Sampling becomes parallel and likelihood becomes sequential. The notebook asks for a MAF, not an IAF.
+
+\section{From a density to a pixel probability}
+
+A flow defines a density on $\R^D$. An image $x\in\Z^D$ is discrete. Assign to $x$ the bin $B_x=x+[0,1)^D$. These bins partition $\R^D$ up to boundaries of measure zero. If $y$ has density $p_\theta$ and $x=\lfloor y\rfloor$, then
+\[
+P_\theta(x)=\int_{[0,1)^D}p_\theta(x+u)\,du.
+\]
+Each value is nonnegative, and the sum over $x\in\Z^D$ equals $\int_{\R^D}p_\theta=1$. So $P_\theta$ is a probability mass function. The number $p_\theta(x)$ is a density evaluated at the corner of the bin. It is not $P_\theta(x)$.
+
+The integral has no closed form for a neural flow. Choose a dequantizer $q(u\given x)$ supported on the unit bin, strictly positive inside it. Importance sampling writes
+\[
+P_\theta(x)=\E_{q(u\given x)}\Bigl[\frac{p_\theta(x+u)}{q(u\given x)}\Bigr].
+\]
+Jensen produces the variational dequantization bound
+\begin{equation}
+\label{eq:dq}
+\log P_\theta(x)
+\ge
+\E_{q}\Bigl[\log\frac{p_\theta(x+u)}{q(u\given x)}\Bigr]
+=\E_q[\log p_\theta(x+u)]+H\bigl(q(\cdot\given x)\bigr).
+\end{equation}
+The first term wants $x+u$ where the flow density is high. The entropy stops $q$ from collapsing to a point, which would throw away the integral.
+
+Define the normalized restriction of the model to the bin,
+\[
+r_\theta(u\given x)=\frac{p_\theta(x+u)}{P_\theta(x)},\qquad u\in[0,1)^D.
+\]
+The same KL algebra as~\eqref{eq:elbokl} gives
+\[
+\log P_\theta(x)-\mathcal L_{\mathrm{DQ}}
+=\KL\bigl(q(u\given x)\Vert r_\theta(u\given x)\bigr).
+\]
+The bound is tight if and only if $q=r_\theta(\cdot\given x)$.
+
+Uniform dequantization sets $q=1$ on the bin. The bound becomes $\int_{[0,1)^D}\log p_\theta(x+u)\,du$, and it is tight if and only if $p_\theta(x+u)$ is constant on the bin. A conditional flow $u=g_\phi(\varepsilon;x)$, with $\varepsilon\sim p_0$ and $g_\phi(\cdot;x)$ a bijection onto $(0,1)^D$, substitutes the change-of-variables formula into~\eqref{eq:dq}:
+\[
+\mathcal L_{\mathrm{DQ}}
+=\E_{\varepsilon}\Bigl[
+\log p_\theta\bigl(x+g_\phi(\varepsilon;x)\bigr)
++\log\lvert\det J_{g}(\varepsilon;x)\rvert
+-\log p_0(\varepsilon)
+\Bigr].
+\]
+A learned $g$ can match a non-uniform $r$, so the KL gap can be smaller than the uniform gap.
+
+\begin{center}
+\begin{tikzpicture}[x=1.15cm,y=1cm]
+  \draw[navy, thick] (0,0) -- (6,0);
+  \foreach \x in {0,1,2,3,4,5,6} {\draw[navy] (\x,0.08) -- (\x,-0.08) node[below, text=muted, font=\small] {\x};}
+  \draw[burgundy, thick, fill=burgundysoft, fill opacity=0.8] (2,0) rectangle (3,1.4);
+  \node[burgundy, font=\small] at (2.5,1.65) {$P(x)=\mathrm{area}$};
+  \draw[teal, thick, domain=0:6, samples=80] plot (\x,{0.35+0.9*exp(-(\x-2.6)*(\x-2.6))});
+  \node[teal, font=\small] at (4.6,1.35) {density $p(y)$};
+\end{tikzpicture}
+\end{center}
+\begin{center}
+\textcolor{muted}{\small The probability of an integer is the area of the density over the unit bin, not the height of the density.}
+\end{center}
+
+\section{Invertible $1\times 1$ convolutions}
+
+RealNVP mixes channels with a fixed permutation. Glow learns the mix. For a tensor $X\in\R^{C\times H\times W}$,
+\[
+Y_{:,i,j}=W X_{:,i,j},\qquad W\in\R^{C\times C},
+\]
+with the same $W$ at every spatial site.
+
+\begin{resultbox}[Homework 2, problem 5]
+The map is invertible if and only if $\det W\neq 0$, and the inverse applies $W^{-1}$ at each site. Vectorize the tensor in an order that keeps the $C$ channels of each pixel together. The full Jacobian is block diagonal with $HW$ blocks, each equal to $W$. Hence
+\[
+\log\lvert\det J\rvert=HW\log\lvert\det W\rvert.
+\]
+With the parameterization $W=PL\bigl(U+\diag(s)\bigr)$ of the previous determinant lemma,
+\[
+\log\lvert\det J\rvert=HW\sum_{i=1}^{C}\log\lvert s_i\rvert.
+\]
+The cost of the log-determinant is linear in the number of channels, not cubic, and it does not grow with a matrix factorization at every pixel.
+\end{resultbox}
+
+\begin{practbox}[One pixel, two channels]
+Let $H=W=1$ and $W=\diag(2,1/2)$. Compute $\log\lvert\det J\rvert$ two ways: from $HW\log\lvert\det W\rvert$, and from the sum of $\log\lvert s_i\rvert$.
+\end{practbox}
+\begin{solbox}
+$\det W=1$, so $\log\lvert\det J\rvert=0$. And $\log\lvert 2\rvert+\log\lvert 1/2\rvert=\log 2+\log(1/2)=0$. The volume of the two channels is unchanged: one axis stretches by $2$, the other shrinks by $2$.
+\end{solbox}

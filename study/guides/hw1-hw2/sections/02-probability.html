@@ -1,0 +1,24 @@
+<section class="chapter" id="probability">
+<h2>Probability</h2>
+<h3>Events, variables, and densities</h3>
+<aside class="box def"><p class="box-title">Definition: Density and mass</p><p>A discrete random variable \(X\) has a probability mass function \(p(x)\ge 0\) with \(\sum_x p(x)=1\). A continuous random variable on \(\mathbb{R}^d\) has a density \(p(x)\ge 0\) with \(\int p(x) dx=1\). The density is not a probability. \(p(x)\) can exceed \(1\). The probability of a set \(A\) is \(\int_A p(x) dx\).</p></aside>
+<aside class="box intuition"><p class="box-title">Intuition</p><p>Think of a density as height and a probability as area. A very narrow bump can be very tall and still have area one. This is why, later, the flow density \(p_\theta(x)\) at an integer pixel is not the probability of that pixel.</p></aside>
+<p>The joint density \(p(x,z)\) describes the pair. The marginal of \(x\) sums or integrates the other variable out,
+\[p(x)=\int p(x,z) dz.\]
+The conditional is the joint divided by the marginal, when the marginal is positive:
+\[p(z\mid x)=\frac{p(x,z)}{p(x)},\qquad p(x,z)=p(x\mid z) p(z).\]
+The second display is the chain rule. It is the only legal way to build a joint from conditionals on a directed graph: each node is conditioned on its parents, and the graph is acyclic.</p>
+<aside class="box result"><p class="box-title">Result: Bayes</p><p>\[p(z\mid x)=\frac{p(x\mid z) p(z)}{p(x)}.\]
+The denominator is the marginal likelihood. In a latent-variable model it is the integral that the ELBO avoids computing.</p></aside>
+<h3>Expectation, variance, and Jensen</h3>
+<aside class="box def"><p class="box-title">Definition: Expectation</p><p>For a function \(f\) and a density \(p\),
+\[\mathbb{E}_{x\sim p}[f(x)]=\int f(x) p(x) dx,\]
+when the integral exists. Linearity holds even if the coordinates of \(x\) are dependent: \(\mathbb{E}[a^\top x]=a^\top\mathbb{E}[x]\).</p></aside>
+<p>Variance is \(\mathrm{Var}(f)=\mathbb{E}[f^2]-(\mathbb{E} f)^2\). For a sum of independent random variables the variances add. They do not add when the variables share randomness. That fact is the whole of the importance-sampling variance story: a bad proposal makes \(f p/q\) wildly dependent on the draw.</p>
+<aside class="box result"><p class="box-title">Result: Jensen</p><p>If \(\psi\) is concave and the expectations exist, then \(\psi(\mathbb{E}[X])\ge \mathbb{E}[\psi(X)]\). The logarithm is concave, so
+\[\log \mathbb{E}[X]\ge \mathbb{E}[\log X].\]
+Equality holds when \(X\) is almost surely constant, or more generally when \(\psi\) is affine on the range of \(X\).</p></aside>
+<aside class="box intuition"><p class="box-title">Intuition</p><p>Jensen is the reason a lower bound appears every time a logarithm moves inside an expectation. Lecture 4, slide 34, writes exactly this for \(\psi=\log\). Homework 2 uses it twice: once for the ELBO, and once for variational dequantization.</p></aside>
+<aside class="box practice"><p class="box-title">Practice: A one-line Jensen gap</p><p>Let \(Z\in\{0,1\}\) with equal probability, and let \(f(0)=1\), \(f(1)=e\). Compare \(\log\mathbb{E}[f(Z)]\) with \(\mathbb{E}[\log f(Z)]\).</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>\(\mathbb{E}[f]=(1+e)/2\), so \(\log\mathbb{E}[f]=\log(1+e)-\log 2\). And \(\mathbb{E}[\log f]=\frac12\log 1+\frac12\log e=\frac12\). The gap is \(\log(1+e)-\log 2-\frac12&gt;0\) because \(f\) is not constant.</p></aside>
+</section>
