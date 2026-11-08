@@ -13,11 +13,14 @@ GitHub Pages serves three levels. Later assignments are new folders, not edits t
 | Page | Path |
 |---|---|
 | Course home | [index.html](index.html) |
+| Calendar | [calendar/](calendar/index.html) |
+| Lectures | [lectures/](lectures/index.html) |
 | Homework list | [homeworks/](homeworks/index.html) |
 | Homework 1 | [hw1/](hw1/index.html) |
 | Homework 2 | [hw2/](hw2/index.html) |
+| Homework 2 study map | [study/](study/index.html) |
 
-Homework 1 contains the study sheet, the teaching PDF and its LaTeX, the written solutions, the lecture check, the figures, and the coding assignment in `hw1/chw1/`. Homework 2 contains the theoretical sheet in `hw2/theory/` and the VAE and normalizing-flow notebooks in `hw2/simulation/`. Shared KaTeX lives in `assets/katex/` so another homework page can use the same fonts.
+Homework 1 is in `hw1/`: the study sheet, the teaching PDF and its LaTeX, the written solutions, the lecture check, the figures, and the coding assignment in `hw1/chw1/`. Homework 2 contains the theoretical sheet in `hw2/theory/`, the VAE and normalizing-flow notebooks in `hw2/simulation/`, and the study report in `study/`. Lecture PDFs are in `lectures/`. The 1404 calendar from Lecture 0 is in `calendar/`. Shared KaTeX lives in `assets/katex/` so another homework page can use the same fonts.
 
 To add a homework: create `hwN/index.html` with the same navigation, put that assignment’s files in `hwN/`, and add a card on `homeworks/index.html`.
 

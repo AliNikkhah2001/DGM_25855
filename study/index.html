@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homework 2 study map — Deep Generative Models</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="wrap wide">
+  <nav class="site" aria-label="Site">
+    <a href="../">Course</a>
+    <a href="../calendar/">Calendar</a>
+    <a href="../lectures/">Lectures</a>
+    <a href="../homeworks/">Homeworks</a>
+    <a href="./" aria-current="page">Study map</a>
+  </nav>
+  <p class="crumb">Homework 2 · course 25732-1</p>
+  <h1>Study map</h1>
+  <p class="lede">The order for the written sheet and the two notebooks. Do the ELBO before the flow notebook. The same notes are in <a href="study-map.md">study-map.md</a>. Slide numbers are the numbers printed on the <a href="../lectures/">lecture PDFs</a>.</p>
+
+  <h2>Order of work</h2>
+  <table class="data">
+    <thead>
+      <tr><th>Step</th><th>Block</th><th>Do this</th><th>Opens</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>Probability</td><td><a href="../lectures/DGM_Presentation-2_Foundation.pdf">Lecture 2</a>, slides 12–42. Refresh Homework 1, problems 1 and 2.</td><td>Every proof</td></tr>
+      <tr><td>2</td><td>Unconditional VAE</td><td><a href="../lectures/DGM_Presentation-4_Variational_Autoencoders.pdf">Lecture 4</a>, slides 12–40, then 56–64, then 77–84.</td><td>Theory problem 1</td></tr>
+      <tr><td>3</td><td>Conditional ELBO</td><td>Write theory 1.1, 1.2, 1.3, and 1.4.</td><td><a href="../hw2/simulation/VAE.ipynb">VAE notebook</a></td></tr>
+      <tr><td>4</td><td>VAE code</td><td>Notebook 1: part I (40), part II (15), part III (45).</td><td></td></tr>
+      <tr><td>5</td><td>Two latents</td><td>Tomczak §5.5.2.1, then theory problem 2.</td><td>Same KL identity, two variables</td></tr>
+      <tr><td>6</td><td>Change of variables</td><td><a href="../lectures/DGM_Presentation-5_Flow_Models.pdf">Lecture 5</a>, slides 3–34, then 40–64.</td><td>Theory 4.1, 3, and 5</td></tr>
+      <tr><td>7</td><td>Coupling and priors</td><td>Write 4.1, then 3.1 and 3.2, then problem 5.</td><td><a href="../hw2/simulation/Flow.ipynb">Flow notebook</a></td></tr>
+      <tr><td>8</td><td>Discrete pixels</td><td>Tomczak §4.1.3.3 and Flow++, then theory 4.2–4.4.</td><td></td></tr>
+      <tr><td>9</td><td>Flow code</td><td>Notebook 2: part III (10), part II (30), then part I (60).</td><td>Part I is the long experiment</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Prerequisites</h2>
+  <p>Lecture 0, slide 5, names probability and statistics, linear algebra, and machine learning. The course is not an introduction to those.</p>
+  <table class="data">
+    <thead>
+      <tr><th>Skill</th><th>Read</th><th>First used</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Joint, conditional, Bayes, chain rule</td><td>Lecture 2, slides 12–29. MIT RES.6-012.</td><td>Every problem</td></tr>
+      <tr><td>Expectation and Monte Carlo</td><td>Lecture 2, slides 30–35. <a href="../hw1/">Homework 1</a>, problem 2.</td><td>Theory 1.4, VAE II.3, Flow II.3</td></tr>
+      <tr><td>Jensen for a concave log</td><td>Lecture 4, slide 34.</td><td>Theory 1.1 and 4.3</td></tr>
+      <tr><td>KL is nonnegative, zero only when the densities agree, and not symmetric</td><td>Lecture 2, slides 36–39. Homework 1, problem 2.</td><td>Theory 1, 2, and 4.4</td></tr>
+      <tr><td>An affine image of a Gaussian is Gaussian</td><td>Homework 1, problem 1.</td><td>Theory 1.3, 1.4, and the 1×1 convolution</td></tr>
+      <tr><td>Determinant of a triangular matrix, and det(AB) = det(A) det(B)</td><td>Linear algebra. Lecture 5 uses the consequence.</td><td>Theory 4.1 and 5</td></tr>
+      <tr><td>MADE masks</td><td>Homework 1 autoregressive problems. <a href="../lectures/DGM_Presentation-3_Deep_Autoregressive_Models.pdf">Lecture 3</a>.</td><td>Flow notebook part III</td></tr>
+    </tbody>
+  </table>
+  <p>Books on Lecture 0, slide 12, in the order they help this homework: Jakub M. Tomczak, <em>Deep Generative Modeling</em> (chapter 4 flows, chapter 5 latent-variable models); Kevin P. Murphy, <em>Probabilistic Machine Learning: Advanced Topics</em>, 2023 (chapters 10, 11, 21, and 23); Christopher M. Bishop and Hugh Bishop, <em>Deep Learning: Foundations and Concepts</em>, 2023. Online: Stanford CS236 and Berkeley CS294-158, the VAE and flow lectures.</p>
+
+  <h2>What Lectures 4 and 5 do not contain</h2>
+  <table class="data">
+    <thead>
+      <tr><th>Gap</th><th>Read this</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Conditional ELBO (problem 1)</td><td>The Lecture 4 proofs, with the condition <em>u</em> written into every density. Optional: Sohn, Lee, and Yan, NeurIPS 2015.</td></tr>
+      <tr><td>Two-layer hierarchical ELBO (problem 2)</td><td>Tomczak §5.5.2.1. Murphy chapter 21. The proof pattern is Lecture 4, slides 38–39.</td></tr>
+      <tr><td>Variational dequantization (4.2–4.4)</td><td>Tomczak §4.1.3.3. Ho, Chen, Srinivas, Duan, and Abbeel, Flow++, ICML 2019.</td></tr>
+      <tr><td>Glow 1×1 convolution (problem 5)</td><td>Kingma and Dhariwal, Glow, NeurIPS 2018. Lecture 5 stops at RealNVP’s fixed channel permutation.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Block 1. ELBO, then the conditional VAE</h2>
+  <p>Read <a href="../lectures/DGM_Presentation-4_Variational_Autoencoders.pdf">Lecture 4</a> in this order, then write problem 1.</p>
+  <table class="data">
+    <thead>
+      <tr><th>Slides</th><th>What they do</th><th>Homework</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>3–11</td><td>A Gaussian mixture as a latent-variable model.</td><td>VAE part II: a mixture prior can sit on several modes.</td></tr>
+      <tr><td>12–16</td><td>Continuous latent, joint p(x, z) = p(x|z) p(z).</td><td>The model in problem 1, before the condition u.</td></tr>
+      <tr><td>17–29</td><td>The likelihood is an intractable posterior expectation. Importance sampling is unbiased and can have huge variance.</td><td>Why the sheet asks for a bound.</td></tr>
+      <tr><td>30–40</td><td>Jensen gives the ELBO. The gap is a KL. Equality holds when q is the true posterior.</td><td>Theory 1.1, both proofs, with u added.</td></tr>
+      <tr><td>56–64</td><td>Reparameterization z = μ + σ ε.</td><td>Theory 1.4 and VAE I.2a.</td></tr>
+      <tr><td>77–84</td><td>ELBO = reconstruction minus KL(q(z|x) ‖ p(z)).</td><td>Theory 1.2 and VAE I.4.</td></tr>
+    </tbody>
+  </table>
+  <ol>
+    <li><strong>1.1.</strong> Repeat slides 34 and 38–39 with p(x, z | u) and q(z | x, u). Equality holds when the KL is zero.</li>
+    <li><strong>1.2.</strong> Split the bound as on slide 78. If q matches the conditional prior, the KL vanishes and the remaining gap is Jensen’s gap on the decoder. If the decoder ignores z, the true posterior equals the prior: posterior collapse. See Tomczak §5.3.6 and Murphy chapter 21.</li>
+    <li><strong>1.3.</strong> Integrate the KL of two diagonal Gaussians coordinatewise. The N(0, I) prior is the formula in VAE I.2. Homework 1’s Gaussian KL is the template. The lecture does not print this integral.</li>
+    <li><strong>1.4.</strong> State z = μ + σ ⊙ ε, check the mean and covariance, and differentiate the Monte Carlo reconstruction through that map. Keep the KL in closed form.</li>
+  </ol>
+
+  <h2>Block 2. VAE notebook</h2>
+  <p><a href="../hw2/simulation/VAE.ipynb">VAE.ipynb</a>. Part I is 40 points, part II is 15, part III is 45.</p>
+  <table class="data">
+    <thead>
+      <tr><th>Part</th><th>Points</th><th>Implement</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>I.2a</td><td>4</td><td>reparameterize</td></tr>
+      <tr><td>I.2b</td><td>4</td><td>diagonal Gaussian KL against N(0, I)</td></tr>
+      <tr><td>I.3</td><td>4</td><td>encode, decode, forward</td></tr>
+      <tr><td>I.4</td><td>7</td><td>BCE-with-logits plus KL, nats per image, no sigmoid inside the loss</td></tr>
+      <tr><td>I.5</td><td>3</td><td>evaluate a whole loader</td></tr>
+      <tr><td>I.6</td><td>8</td><td>one step, clip at norm 5</td></tr>
+      <tr><td>I.7</td><td>5</td><td>samples from the prior</td></tr>
+      <tr><td>I.8</td><td>5</td><td>latent interpolation</td></tr>
+      <tr><td>II.2–II.7</td><td>5+4+3+3</td><td>mixture log-density, Monte Carlo KL, off-mode diagnostic, discussion</td></tr>
+      <tr><td>III.2–III.8</td><td>9+5+7+6+9+9</td><td>masks, corruption, training, filling missing pixels, masked MSE, write-up</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Block 3. Hierarchical VAE</h2>
+  <p>Theory problem 2. There is no notebook section. Read Tomczak §5.5.2.1 first. The model is p(z2) p(z1 | z2) p(x | z1), with x independent of z2 given z1, and q(z2 | x) q(z1 | z2, x).</p>
+  <ol>
+    <li><strong>2.1.</strong> Start from the KL between the approximate and true joint posteriors, as on Lecture 4 slides 38–39. The ELBO splits into a reconstruction, a KL on z2, and an expected KL on z1 given z2. The inner KL is averaged under q(z2 | x).</li>
+    <li><strong>2.2.</strong> The hierarchical ELBO is at most the one-layer ELBO on z1. Equality holds when q(z2 | z1, x) equals p(z2 | z1). An auxiliary r(z2 | z1) lower-bounds log p(z1), and the bound is tight when r is that true conditional.</li>
+  </ol>
+
+  <h2>Block 4. Flows, then Glow</h2>
+  <p>Read <a href="../lectures/DGM_Presentation-5_Flow_Models.pdf">Lecture 5</a>, then write 4.1, 3.1, 3.2, and 5, in that order.</p>
+  <table class="data">
+    <thead>
+      <tr><th>Slides</th><th>What they do</th><th>Homework</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>3–34</td><td>Change of variables. The log-determinant of a composition is a sum.</td><td>Theory 3.1 and 4.1</td></tr>
+      <tr><td>40–51</td><td>NICE additive coupling. Triangular Jacobian, zero log-determinant, plus a rescaling layer.</td><td>The simpler cousin of 4.1</td></tr>
+      <tr><td>52–64</td><td>RealNVP affine coupling. The log-determinant is the sum of the scale outputs.</td><td>Theory 4.1. Flow notebook parts I and II.</td></tr>
+      <tr><td>65–73</td><td>Masked autoregressive flow. Likelihood is parallel. Sampling is sequential.</td><td>Flow notebook part III</td></tr>
+      <tr><td>74–80</td><td>Inverse autoregressive flow. Fast sampling, slow likelihood.</td><td>Not asked. Do not implement an IAF where the notebook wants a MAF.</td></tr>
+    </tbody>
+  </table>
+  <ol>
+    <li><strong>4.1.</strong> Invert the affine coupling with exp(−s). The neural nets s and t never enter the determinant, because the Jacobian stays triangular.</li>
+    <li><strong>3.1.</strong> Put the Lecture 5 change-of-variables formula into the KL on Lecture 4, slide 78. The prior is the pushforward of N(0, I) through f.</li>
+    <li><strong>3.2.</strong> The u-space and z-space models have the same marginal likelihood, and the KLs match when the variational densities are exact images of each other. Under a diagonal-Gaussian restriction, f(u1, u2) = (u1, u2 + u1²) takes N(0, I) outside that family, so the restricted problems differ. Tomczak §5.4.1.8.</li>
+    <li><strong>5.</strong> Glow uses the same W at every pixel. Invertible if and only if det W ≠ 0. The full log-determinant is HW log|det W|. With W = P L (U + diag(s)), that sum collapses to HW times the sum of log|si|.</li>
+  </ol>
+
+  <h2>Block 5. Dequantization</h2>
+  <p>Theory 4.2–4.4, after 4.1. A discrete pixel owns the bin x + [0, 1)^D. Its probability is the integral of the density over that bin, not the density itself. A dequantizer q(u | x) on the bin gives a lower bound by the same Jensen step as Lecture 4, slides 34–35. The gap is a KL inside the bin, so the bound is tight only when q matches the model density renormalized on the bin. Uniform noise is tight only when the density is flat on the bin. A conditional flow can match a non-uniform bin.</p>
+
+  <h2>Block 6. Flow notebook</h2>
+  <p><a href="../hw2/simulation/Flow.ipynb">Flow.ipynb</a>. Do part III, then II, then I. Keep the seeds fixed. Set FAST_DEV_RUN to false for the final run. Part I is 60 points, part II is 30, part III is 10.</p>
+  <table class="data">
+    <thead>
+      <tr><th>Part</th><th>Points</th><th>What it is</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>III.1–III.2</td><td>6+4</td><td>Two MAFs on Lab chroma, then why a global palette can still paint the wrong object.</td></tr>
+      <tr><td>II.1–II.4</td><td>8+10+4+8</td><td>YUV split, conditional flow, NLL per chroma dimension, and why NLL is not visual quality.</td></tr>
+      <tr><td>I.1–I.7</td><td>10+8+7+10+10+4+11</td><td>Healthy-only spatial coupling: synthetic brick defects, then MVTec with a frozen ResNet-18.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Papers, in the order you meet them</h2>
+  <ol>
+    <li>D. P. Kingma and M. Welling, Auto-Encoding Variational Bayes, ICLR 2014. ELBO and reparameterization.</li>
+    <li>K. Sohn, H. Lee, and X. Yan, Learning Structured Output Representation using Deep Conditional Generative Models, NeurIPS 2015. Optional for the condition u.</li>
+    <li>D. P. Kingma and M. Welling, An Introduction to Variational Autoencoders, Foundations and Trends in Machine Learning, 2019. Posterior collapse.</li>
+    <li>C. K. Sønderby, T. Raiko, L. Maaløe, S. K. Sønderby, and O. Winther, Ladder Variational Autoencoders, NeurIPS 2016. Optional original for problem 2.</li>
+    <li>D. J. Rezende and S. Mohamed, Variational Inference with Normalizing Flows, ICML 2015. The homework puts the flow in the prior.</li>
+    <li>L. Dinh, D. Krueger, and Y. Bengio, NICE, 2015. L. Dinh, J. Sohl-Dickstein, and S. Bengio, Real NVP, ICLR 2017. G. Papamakarios, T. Pavlakou, and I. Murray, Masked Autoregressive Flow, NeurIPS 2017. These three are on Lecture 5, slide 84.</li>
+    <li>D. P. Kingma and P. Dhariwal, Glow, NeurIPS 2018.</li>
+    <li>J. Ho, X. Chen, A. Srinivas, Y. Duan, and P. Abbeel, Flow++, ICML 2019.</li>
+  </ol>
+  <p>The written sheet is <a href="../hw2/theory/DGM-HW2.pdf">DGM-HW2.pdf</a>. Homework 1, already in this repository, is <a href="../hw1/">hw1/</a>.</p>
+</div>
+</body>
+</html>

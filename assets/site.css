@@ -17,6 +17,7 @@ a { color: var(--accent); }
 .wrap { max-width: 880px; margin: 0 auto; padding: 22px 20px 48px; }
 nav.site {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   font-size: 15px;
   margin-bottom: 22px;
@@ -42,4 +43,11 @@ figcaption, footer, .note { color: var(--muted); font-size: 14px; }
 footer { margin-top: 18px; }
 ol.hw { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
 ol.hw li { margin: 0; }
+.wrap.wide { max-width: 1040px; }
+table.data { width: 100%; border-collapse: collapse; font-size: 15px; margin: 8px 0 18px; }
+table.data th, table.data td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+table.data th { font-weight: 500; }
+h3 { font-weight: 500; font-size: 22px; margin: 22px 0 6px; }
+ul, ol { padding-left: 1.2em; }
+li { margin: 4px 0; }
 @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
