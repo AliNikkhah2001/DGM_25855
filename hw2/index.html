@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homework 2 — Deep Generative Models</title>
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="site" aria-label="Site">
+    <a href="../">Course</a>
+    <a href="../homeworks/">Homeworks</a>
+    <a href="./" aria-current="page">Homework 2</a>
+  </nav>
+  <p class="crumb">Homework 2 · course 25732-1</p>
+  <h1>Homework 2</h1>
+  <p class="lede">Variational autoencoders and normalizing flows. The written sheet is due Wednesday, Aban 27, 23:59. The simulation work is two notebooks.</p>
+  <div class="grid">
+    <article class="wide">
+      <h2>Theoretical assignment</h2>
+      <p>Five written problems: conditional VAEs, hierarchical VAEs, flow-based priors, dequantization, and Glow’s invertible 1×1 convolution.</p>
+      <ol>
+        <li>Conditional VAE: conditional ELBO, reconstruction versus KL, posterior collapse, closed-form diagonal Gaussian KL, reparameterization gradient.</li>
+        <li>Hierarchical VAE: two-layer ELBO, marginal prior, and the variational representation of log p(z1).</li>
+        <li>Flow-based prior inside a VAE, and when a diagonal-Gaussian variational family breaks the equivalence.</li>
+        <li>Affine coupling, discrete likelihood by dequantization, and uniform versus learned dequantization.</li>
+        <li>Glow: invertibility of a 1×1 convolution and the LU log-determinant.</li>
+      </ol>
+      <a href="theory/DGM-HW2.pdf">Read the PDF</a>
+    </article>
+    <article>
+      <h2>Simulation · VAEs</h2>
+      <p>Practical Assignment 2, notebook 1. Fashion-MNIST generation, a mixture prior on synthetic data, and a denoising VAE on MNIST. 100 points.</p>
+      <ol>
+        <li>Train a convolutional VAE: reparameterization, KL, loss, training step, prior samples, interpolation. 40 points.</li>
+        <li>Compare a standard Gaussian prior with a mixture prior. 15 points.</li>
+        <li>Restore missing pixels with a denoising VAE. 45 points.</li>
+      </ol>
+      <a href="simulation/VAE.ipynb">VAE.ipynb</a>
+    </article>
+    <article>
+      <h2>Simulation · flows</h2>
+      <p>Practical Assignment 2, notebook 2. Coupling layers and a masked autoregressive flow, used for anomaly maps, colorization, and palette transfer. 100 points.</p>
+      <ol>
+        <li>Anomaly localization on brick texture and MVTec AD, trained on healthy images only. 60 points.</li>
+        <li>Conditional colorization of STL-10 from luminance. 30 points.</li>
+        <li>Global color transfer with a 2D masked autoregressive flow. 10 points.</li>
+      </ol>
+      <a href="simulation/Flow.ipynb">Flow.ipynb</a>
+    </article>
+  </div>
+</div>
+</body>
+</html>
