@@ -75,3 +75,147 @@ In the decomposition of $\mathcal L_H$, why is the fine-code KL inside an expect
 \begin{solbox}
 The KL $\KL(q(z_1\given z_2,x)\Vert p(z_1\given z_2))$ is a function of $z_2$. The variational joint draws $z_2$ from $q(z_2\given x)$ before drawing $z_1$. Taking the expectation is what the joint KL produces when you integrate that coordinate. Freezing one $z_2$ would describe a different, degenerate inference distribution.
 \end{solbox}
+
+\section{Homework 2 problems}
+
+\begin{hwqbox}[Homework 2, problem 2.1]
+Consider a two-layer hierarchical VAE with $x\perp z_2\given z_1$,
+\[
+p_\theta(x,z_1,z_2)=p_\theta(z_2)\,p_\theta(z_1\given z_2)\,p_\theta(x\given z_1),
+\]
+and variational family
+\[
+q_\phi(z_1,z_2\given x)=q_\phi(z_2\given x)\,q_\phi(z_1\given z_2,x).
+\]
+Starting from the KL between the approximate and true posteriors, prove that
+\[
+\log p_\theta(x)
+=\mathcal L_H(x)
++\KL\bigl(q_\phi(z_1,z_2\given x)\Vert p_\theta(z_1,z_2\given x)\bigr).
+\]
+Derive the hierarchical ELBO in the decomposed form
+\begin{align*}
+\mathcal L_H(x)
+&=\E_{q_\phi(z_1,z_2\given x)}[\log p_\theta(x\given z_1)]
+-\KL\bigl(q_\phi(z_2\given x)\Vert p_\theta(z_2)\bigr)\\
+&\quad-\E_{q_\phi(z_2\given x)}\Bigl[
+\KL\bigl(q_\phi(z_1\given z_2,x)\Vert p_\theta(z_1\given z_2)\bigr)
+\Bigr].
+\end{align*}
+Express $\log p_\theta(x)-\mathcal L_H(x)$ as a KL, and explain why the final KL is averaged under $q_\phi(z_2\given x)$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 2, problem 2.1]
+Apply the ELBO--KL identity~\eqref{eq:elbokl} to the joint latent $(z_1,z_2)$:
+\begin{align*}
+\KL\bigl(q_\phi(z_1,z_2\given x)\Vert p_\theta(z_1,z_2\given x)\bigr)
+&=\E_{q_\phi}\bigl[
+\log q_\phi-\log p_\theta(x,z_1,z_2)+\log p_\theta(x)
+\bigr]\\
+&=\log p_\theta(x)-\mathcal L_H(x),
+\end{align*}
+where
+\[
+\mathcal L_H(x)
+=\E_{q_\phi(z_1,z_2\given x)}\Bigl[
+\log\frac{p_\theta(x,z_1,z_2)}{q_\phi(z_1,z_2\given x)}
+\Bigr].
+\]
+Hence $\log p_\theta(x)-\mathcal L_H(x)$ equals that joint KL.
+
+Substitute the factorizations
+$p_\theta(x,z_1,z_2)=p_\theta(z_2)\,p_\theta(z_1\given z_2)\,p_\theta(x\given z_1)$ and
+$q_\phi=q_\phi(z_2\given x)\,q_\phi(z_1\given z_2,x)$:
+\begin{align*}
+\mathcal L_H
+&=\E_{q_\phi}\bigl[
+\log p(x\given z_1)+\log p(z_2)+\log p(z_1\given z_2)\\
+&\qquad-\log q(z_2\given x)-\log q(z_1\given z_2,x)
+\bigr].
+\end{align*}
+The terms in $z_2$ alone rearrange to $-\KL(q(z_2\given x)\Vert p(z_2))$.
+The terms involving $z_1$ given $z_2$ rearrange to
+\[
+-\E_{q(z_2\given x)}\Bigl[
+\KL\bigl(q(z_1\given z_2,x)\Vert p(z_1\given z_2)\bigr)
+\Bigr],
+\]
+because the conditional KL is a function of the random $z_2\sim q(z_2\given x)$.
+The remaining piece is $\E_{q}[\log p(x\given z_1)]$. That is the claimed decomposition. The outer expectation on the fine-code KL is forced by the joint variational law: $z_2$ is drawn from $q(z_2\given x)$ before $z_1$ is scored.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 2, problem 2.2]
+Prove that
+\[
+\mathcal L_H(x)
+=\mathcal L_M(x)
+-\E_{q_\phi(z_1\given x)}\Bigl[
+\KL\bigl(q_\phi(z_2\given z_1,x)\Vert p_\theta(z_2\given z_1)\bigr)
+\Bigr],
+\]
+where
+\[
+\mathcal L_M(x)
+=\E_{q_\phi(z_1\given x)}[\log p_\theta(x\given z_1)]
+-\KL\bigl(q_\phi(z_1\given x)\Vert p_\theta(z_1)\bigr).
+\]
+Prove $\mathcal L_H\le\mathcal L_M$, give the necessary and sufficient condition for equality, and characterize the conditional $q(z_2\given z_1,x)$ that maximizes $\mathcal L_H$ for fixed marginal $q_\phi(z_1\given x)$.
+
+For an arbitrary auxiliary $r(z_2\given z_1)$, prove
+\begin{align*}
+\log p_\theta(z_1)
+&=\E_r[\log p_\theta(z_1\given z_2)]
+-\KL\bigl(r(z_2\given z_1)\Vert p_\theta(z_2)\bigr)\\
+&\quad+\KL\bigl(r(z_2\given z_1)\Vert p_\theta(z_2\given z_1)\bigr).
+\end{align*}
+Hence obtain the variational representation
+\[
+\log p_\theta(z_1)
+=\sup_r\Bigl\{
+\E_r[\log p_\theta(z_1\given z_2)]
+-\KL\bigl(r\Vert p_\theta(z_2)\bigr)
+\Bigr\},
+\]
+and determine when the supremum is attained.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 2, problem 2.2]
+Write the hierarchical ELBO with the reverse factorization of $q$, namely
+$q(z_1,z_2\given x)=q(z_1\given x)\,q(z_2\given z_1,x)$, and expand
+$p(z_1,z_2)=p(z_1)\,p(z_2\given z_1)$:
+\begin{align*}
+\mathcal L_H
+&=\E_q[\log p(x\given z_1)]
+-\KL\bigl(q(z_1\given x)\Vert p(z_1)\bigr)\\
+&\quad-\E_{q(z_1\given x)}\Bigl[
+\KL\bigl(q(z_2\given z_1,x)\Vert p(z_2\given z_1)\bigr)
+\Bigr]\\
+&=\mathcal L_M(x)
+-\E_{q(z_1\given x)}\Bigl[
+\KL\bigl(q(z_2\given z_1,x)\Vert p(z_2\given z_1)\bigr)
+\Bigr].
+\end{align*}
+The subtracted KL is nonnegative, so $\mathcal L_H\le\mathcal L_M$. Equality holds if and only if
+$q(z_2\given z_1,x)=p(z_2\given z_1)$ almost everywhere.
+For fixed marginal $q(z_1\given x)$, that conditional is exactly the maximizer of $\mathcal L_H$.
+
+For the prior identity, expand
+\begin{align*}
+\KL\bigl(r(z_2\given z_1)\Vert p(z_2\given z_1)\bigr)
+&=\E_r[\log r-\log p(z_1,z_2)+\log p(z_1)]\\
+&=\E_r[\log r-\log p(z_2)-\log p(z_1\given z_2)]+\log p(z_1).
+\end{align*}
+Rearrangement gives
+\begin{align*}
+\log p(z_1)
+&=\E_r[\log p(z_1\given z_2)]
+-\KL\bigl(r\Vert p(z_2)\bigr)
++\KL\bigl(r\Vert p(z_2\given z_1)\bigr).
+\end{align*}
+Drop the last nonnegative KL to obtain a lower bound. The bound is an equality when $r=p(z_2\given z_1)$, so
+\[
+\log p(z_1)
+=\sup_r\Bigl\{
+\E_r[\log p(z_1\given z_2)]-\KL(r\Vert p(z_2))
+\Bigr\},
+\]
+with the supremum attained at the true conditional $r=p(z_2\given z_1)$. This is the same ``gap equals a KL'' pattern as~\eqref{eq:elbokl}.
+\end{hwsolbox}

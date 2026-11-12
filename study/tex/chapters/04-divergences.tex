@@ -57,6 +57,22 @@ Against the standard normal $p=\N(0,I)$ this collapses to
 
 Equation~\eqref{eq:stdkl} is the KL implemented in the VAE notebook. Equation~\eqref{eq:diagkl} is Homework~2, problem~1.3, before that specialization.
 
+The same calculation with full covariances $\Sigma_0,\Sigma_1\succ 0$ produces the multivariate formula used in Homework~1, problem~1.4(b). Write $p_i=\N(\mu_i,\Sigma_i)$. Then
+\begin{resultbox}[Multivariate Gaussian KL]
+\label{res:mvnkl}
+\begin{equation}
+\label{eq:mvnkl}
+\KL(p_0\Vert p_1)
+=\frac12\Biggl[
+\tr(\Sigma_1^{-1}\Sigma_0)
++(\mu_0-\mu_1)^\top\Sigma_1^{-1}(\mu_0-\mu_1)
+-d
++\log\frac{\det\Sigma_1}{\det\Sigma_0}
+\Biggr].
+\end{equation}
+\end{resultbox}
+The trace and Mahalanobis terms come from $\E_{p_0}[(x-\mu_1)^\top\Sigma_1^{-1}(x-\mu_1)]$. Subtracting the differential entropy $h(p_0)=\tfrac d2\log(2\pi e)+\tfrac12\log\det\Sigma_0$ cancels the $\tfrac d2\log(2\pi)$ pieces and leaves~\eqref{eq:mvnkl}. Chapter~\ref{ch:gauss} uses this formula inside the maximum-entropy Pythagorean identity.
+
 \begin{practbox}[A number you can check by hand]
 Compute $\KL(\N(0,1)\Vert \N(0,e))$ and $\KL(\N(0,e)\Vert \N(0,1))$.
 \end{practbox}
@@ -79,3 +95,139 @@ JS is symmetric. In nats, $0\le \JS(p\Vert q)\le \log 2$. The upper bound $1$ on
 \begin{intbox}
 KL is infinite when supports are disjoint, so it cannot compare a model that puts no mass on a point with a data distribution that does. JS stays finite because $m$ charges both supports. GANs later exploit a divergence with that behaviour. Homework~1 asks you to see the failure of KL directly.
 \end{intbox}
+
+Expanding the two KL terms and rearranging Shannon entropies gives the entropy form
+\begin{resultbox}[JS as an entropy gap]
+\[
+\JS(p\Vert q)=H(m)-\tfrac12 H(p)-\tfrac12 H(q),
+\]
+in the same base used for the logarithms. Equivalently, if $Z\sim\mathrm{Bernoulli}(1/2)$ and $X\mid Z=0\sim p$, $X\mid Z=1\sim q$, then $X\sim m$ and
+\[
+\JS(p\Vert q)=I(Z;X)=H(X)-H(X\given Z).
+\]
+\end{resultbox}
+Mutual information satisfies $0\le I(Z;X)\le H(Z)=\log 2$ in nats. The lower bound is attained if and only if $p=q$. The upper bound is attained if and only if $Z$ is a function of $X$, i.e.\ $p$ and $q$ are mutually singular. Pointwise, $m\ge p/2$ on $\{p>0\}$ forces $\log(p/m)\le\log 2$, so each half of JS is at most $\log 2$ and the average recovers the same cap.
+
+\begin{practbox}[JS of two point masses]
+On $\{0,1\}$, take $p=\delta_0$ and $q=\delta_1$. Compute $\KL(p\Vert q)$ and $\JS(p\Vert q)$ in nats.
+\end{practbox}
+\begin{solbox}
+$\KL(p\Vert q)=\infty$ because $q(0)=0$ while $p(0)=1$. The mixture $m$ is uniform on two atoms, $H(m)=\log 2$, and $H(p)=H(q)=0$, so $\JS=\log 2$. JS saturates while KL is infinite.
+\end{solbox}
+
+\section{Bernoulli KL near the boundary}
+
+For Bernoulli parameters $a,c\in(0,1)$,
+\[
+\KL\bigl(\mathrm{Ber}(a)\Vert\mathrm{Ber}(c)\bigr)
+=a\log\frac ac+(1-a)\log\frac{1-a}{1-c}.
+\]
+As $c\to 0^+$ with $a$ fixed in $(0,1)$, the expansion $-\log(1-c)=c+O(c^2)$ yields
+\begin{resultbox}[Asymmetry at the edge]
+\[
+\KL\bigl(\mathrm{Ber}(a)\Vert\mathrm{Ber}(c)\bigr)=-a\log c-H(\mathrm{Ber}(a))+O(c)\to+\infty,
+\]
+while
+\[
+\KL\bigl(\mathrm{Ber}(c)\Vert\mathrm{Ber}(a)\bigr)\to-\log(1-a)\in(0,\infty).
+\]
+\end{resultbox}
+Charging an atom that the other distribution abandons costs arbitrarily large KL in one direction and only a finite KL in the other. The contribution $c\log c$ of a vanishing atom disappears.
+
+The same one-sided blow-up shows that KL fails the triangle inequality. For $1>a>b>0$ and $c\to 0^+$,
+\[
+\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(c))-\KL(\mathrm{Ber}(b)\Vert\mathrm{Ber}(c))
+\]
+grows like $-(a-b)\log c\to+\infty$, while $\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(b))$ stays finite. For every small enough $c$,
+\[
+\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(c))
+>\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(b))+\KL(\mathrm{Ber}(b)\Vert\mathrm{Ber}(c)).
+\]
+
+\begin{practbox}[A numerical triangle break]
+In nats, compare $\KL(\mathrm{Ber}(1/2)\Vert\mathrm{Ber}(1/100))$ with the sum through $\mathrm{Ber}(1/5)$.
+\end{practbox}
+\begin{solbox}
+Direct evaluation gives about $1.6145$ on the left and $0.2231+0.4287=0.6518$ on the right. The direct path is more than twice as expensive as the broken path.
+\end{solbox}
+
+\section{Homework 1 problems}
+
+The Monte Carlo, importance sampling, and perplexity parts of Homework~1 problem~2 live in Chapter~\ref{ch:mc}. The KL and JS parts are collected here. The multivariate Gaussian KL formula~\eqref{eq:mvnkl} is the identity invoked by Homework~1, problem~1.4(b); the full Pythagorean argument sits with the Gaussian maximum-entropy section in Chapter~\ref{ch:gauss}.
+
+\begin{hwqbox}[Homework 1, problem 2.3]
+The Jensen--Shannon divergence is $\JS(p\Vert q)=\tfrac12\KL(p\Vert m)+\tfrac12\KL(q\Vert m)$ with $m=(p+q)/2$. Rewrite JS in terms of Shannon entropies. Show that $\JS(p\Vert q)=I(Z;X)$ for a fair Bernoulli bit $Z$ that chooses between sampling $X$ from $p$ or from $q$. Deduce the sharp bounds $0\le\JS\le\log 2$ in nats, and characterize equality.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 2.3]
+Expanding the two KL terms,
+\begin{align*}
+\JS(p\Vert q)
+&=\tfrac12\sum p\log\frac pm+\tfrac12\sum q\log\frac qm\\
+&=-\tfrac12 H(p)-\tfrac12 H(q)-\sum m\log m\\
+&=H(m)-\tfrac12 H(p)-\tfrac12 H(q).
+\end{align*}
+Let $Z\sim\mathrm{Bernoulli}(1/2)$ and $X\mid Z=0\sim p$, $X\mid Z=1\sim q$. Then $X\sim m$ and
+\[
+I(Z;X)=H(X)-H(X\given Z)=H(m)-\tfrac12 H(p)-\tfrac12 H(q)=\JS(p\Vert q).
+\]
+In nats, $0\le I(Z;X)\le H(Z)=\log 2$. The lower bound holds with equality if and only if $Z\perp X$, i.e.\ $p=q$. The upper bound holds if and only if $H(Z\given X)=0$, i.e.\ $Z$ is a function of $X$, i.e.\ $p$ and $q$ are mutually singular.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 2.3(a)]
+Prove the pointwise bound $\KL(p\Vert m)\le\log 2$ (and likewise for $q$), and recover $\JS\le\log 2$. Give an example where $\KL(p\Vert q)=\infty$ while $\JS(p\Vert q)$ is finite and maximal. Comment on the bound $0\le\JS\le 1$ that appears when the logarithm is taken in base~$2$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 2.3(a)]
+Since $m\ge p/2$, one has $\log(p/m)\le\log 2$ on $\{p>0\}$, so $\KL(p\Vert m)\le\log 2$. The same bound holds for $q$, and averaging recovers $\JS\le\log 2$. Equality holds simultaneously when $m=p/2$ $p$-a.s.\ and $m=q/2$ $q$-a.s., i.e.\ on disjoint supports.
+
+If $p=\delta_0$ and $q=\delta_1$ on $\{0,1\}$, then $q(0)=0$ while $p(0)=1$, so $\KL(p\Vert q)=\infty$, but the supports are disjoint and $\JS(p\Vert q)=\log 2$, the maximum.
+
+The quoted bound $0\le\JS\le 1$ is tight for the base-$2$ logarithm (the maximum is one bit). In nats the supremum is $\ln 2$, and the upper bound $1$ is valid but not sharp.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 2.4]
+For $a\in(0,1)$ fixed, expand $\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(c))$ as $c\to 0^+$, and evaluate the limit of $\KL(\mathrm{Ber}(c)\Vert\mathrm{Ber}(a))$. Explain the asymmetry.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 2.4]
+\begin{align*}
+\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(c))
+&=a\log\frac ac+(1-a)\log\frac{1-a}{1-c}\\
+&=-a\log c+\bigl(a\log a+(1-a)\log(1-a)\bigr)-(1-a)\log(1-c).
+\end{align*}
+As $c\to 0^+$, $-\log(1-c)=c+O(c^2)$, so
+\[
+\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(c))
+=-a\log c-H(\mathrm{Ber}(a))+O(c).
+\]
+The leading term is $-a\log c\to+\infty$. The constant after it is $-H(\mathrm{Ber}(a))$.
+
+In the other direction, $c\log c\to 0$ and $(1-c)\log((1-c)/(1-a))\to-\log(1-a)$, so
+\[
+\KL(\mathrm{Ber}(c)\Vert\mathrm{Ber}(a))\to-\log(1-a)\in(0,\infty).
+\]
+KL is not symmetric: charging the point that the other distribution is abandoning costs an arbitrarily large KL in one direction, and only a finite KL in the other. The $c\log c$ contribution of a vanishing atom disappears.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 2.4(a)]
+Show that KL does not satisfy the triangle inequality, by exhibiting Bernoulli parameters $1>a>b>0$ and a sequence $c\to 0^+$ for which
+\[
+\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(c))
+>\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(b))+\KL(\mathrm{Ber}(b)\Vert\mathrm{Ber}(c)).
+\]
+Give a concrete numerical triple in nats.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 2.4(a)]
+For $1>a>b>0$,
+\begin{align*}
+\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(c))&=-a\log c+O(1),\\
+\KL(\mathrm{Ber}(b)\Vert\mathrm{Ber}(c))&=-b\log c+O(1),
+\end{align*}
+while $\KL(\mathrm{Ber}(a)\Vert\mathrm{Ber}(b))$ stays finite. Their difference grows like $-(a-b)\log c\to+\infty$. So for every sufficiently small $c>0$ the displayed strict inequality holds.
+
+Numerical triple, in nats: $(a,b,c)=(1/2,\,1/5,\,1/100)$,
+\[
+\KL(\mathrm{Ber}(1/2)\Vert\mathrm{Ber}(1/100))\approx 1.6145,
+\]
+\[
+\KL(\mathrm{Ber}(1/2)\Vert\mathrm{Ber}(1/5))+\KL(\mathrm{Ber}(1/5)\Vert\mathrm{Ber}(1/100))\approx 0.2231+0.4287=0.6518.
+\]
+\end{hwsolbox}

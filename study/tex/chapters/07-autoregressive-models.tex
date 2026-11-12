@@ -26,28 +26,73 @@ with $x_{<1}$ empty. A fully general conditional at step $d$ is a table of size 
 \textcolor{muted}{\small An autoregressive factorization. Each variable is conditioned only on the variables already generated.}
 \end{center}
 
+\section{Markov models and mixture transitions}
+
+Context length at position $i$ is $\ell_i=\min(m,i-1)$. A conditional table on $K$ symbols has $K-1$ free entries per context. An inhomogeneous Markov model of order $m$ on length $n$ therefore has
+\begin{resultbox}[Inhomogeneous and homogeneous parameter counts]
+\[
+N_m^{\mathrm{nh}}
+=(K^m-1)+(n-m)(K-1)K^m,\qquad
+N_m^{\mathrm{h}}=K^{m+1}-1.
+\]
+\end{resultbox}
+The difference is $(n-m-1)(K-1)K^m$, which vanishes when $n=m+1$: then both families equal the full simplex.
+
+A mixture transition kernel $c_{ab}=\lambda t_1(a)+(1-\lambda)t_2(b)$ on binary contexts forces the cross difference $c_{00}-c_{01}-c_{10}+c_{11}=0$. Its image is a full-dimensional subset of a three-dimensional affine subspace of the free conditional table $[0,1]^4$, so five nominal parameters overcount a three-dimensional model.
+
+\section{KL projection onto autoregressive tables}
+
+For $q(x)=\prod_i q_i(x_i\given c_i)$ and $q^\star(x)=\prod_i p(x_i\given c_i)$,
+\begin{resultbox}[Closest autoregressive table]
+\[
+\KL(p\Vert q)=\KL(p\Vert q^\star)+\sum_i\E\bigl[\KL\bigl(p(\cdot\given c_i)\Vert q_i(\cdot\given c_i)\bigr)\bigr].
+\]
+\end{resultbox}
+Each inner KL is nonnegative, so $q^\star$ is the unique closest member of the inhomogeneous family. The gap $\KL(p\Vert q^\star)$ equals a sum of conditional mutual informations between $x_i$ and the discarded distant past given the window. Maximum likelihood on fully observed sequences estimates those conditionals by empirical counts. Homogeneous models replace the position-dependent kernels by a single tied kernel equal to the mixture of the true conditionals weighted by context frequencies.
+
 \section{FVSBN and NADE}
 
 A fully visible sigmoid belief network replaces the table by a logistic regression on the past:
 \[
 p(x_d=1\given x_{<d})=\sigma\Bigl(b_d+\sum_{k<d}W_{dk}x_k\Bigr).
 \]
-Step $d$ costs $d$ parameters, and the total is $D(D+1)/2$. The map from parameters to distributions is injective for this linear-logit family, so that count is the dimension of the model.
+Step $d$ costs $d$ parameters, and the total is $D(D+1)/2$. The map from parameters to distributions is injective for this linear-logit family, so that count is the dimension of the model. The family is exactly the set of positive pmfs whose autoregressive logits, in the fixed order, are affine. Equality with the full simplex $\dim\mathcal P_D=2^D-1$ holds only for $D=1,2$.
 
 NADE shares one hidden state across the conditionals,
 \[
 h_d=\phi\Bigl(c+\sum_{k<d}W_{:,k}x_k\Bigr),\qquad
 p(x_d=1\given x_{<d})=\sigma(v_d^\top h_d+b_d).
 \]
-Sharing $W$ makes the parameter count linear in $D$ rather than quadratic. The recurrence $a_{d+1}=a_d+W_{:,d}x_d$ evaluates every conditional without recomputing the sum from scratch. Real NADE uses the same hidden state and emits a Gaussian conditional, with mean linear in $h_d$ and variance $\exp(s_d)$.
+Sharing $W$ makes the parameter count $D_h(2D-1)+D$, linear in $D$ rather than quadratic. The recurrence $a_{d+1}=a_d+W_{:,d}x_d$ evaluates every conditional without recomputing the sum from scratch, cutting the scalar multiplications in $\log p(x)$ from $O(D^2 D_h)$ to $O(D D_h)$. Sampling remains sequential: $a_d$ depends on the previously drawn bits. Likelihood of a fully observed $x$ can still be evaluated in parallel across coordinates.
+
+The Bernoulli negative log-likelihood in the logit $z$ has derivative $\sigma(z)-x$. Backpropagating through NADE accumulates $\partial L/\partial a_d$ into shared parameters by a single reverse suffix sum of cost $O(D D_h)$. With $\phi=\tanh$, sign flips and permutations of hidden units leave $p_\theta$ unchanged, giving a hyperoctahedral fiber of size $D_h!\,2^{D_h}$.
+
+Real NADE uses the same hidden state and emits a Gaussian conditional, with mean linear in $h_d$ and variance $\exp(s_d)$; the Gaussian NLL calculus of Chapter~\ref{ch:gauss} then replaces the Bernoulli score.
 
 \begin{intbox}
 Likelihood of a fully observed $x$ can be computed in parallel across coordinates, because every past bit is already known. Sampling cannot. Coordinate $d$ is drawn only after coordinates $1,\ldots,d-1$ exist. Lecture~3 says this in one line, and MAF inherits it.
 \end{intbox}
 
+\begin{practbox}[FVSBN versus full simplex]
+For $D=3$, compare $\dim\mathcal F_3=D(D+1)/2$ with $\dim\mathcal P_3=2^D-1$. Can an FVSBN represent the parity distribution that puts mass $\theta/4$ on odd strings and $(1-\theta)/4$ on even strings when $\theta\ne 1/2$?
+\end{practbox}
+\begin{solbox}
+$\dim\mathcal F_3=6<7=\dim\mathcal P_3$. For the parity law the last logit has second-order interaction $4\log(\theta/(1-\theta))\ne 0$, which no affine function of $(x_1,x_2)$ can match. So no FVSBN represents that $p$, in any order.
+\end{solbox}
+
 \section{MADE masks}
 
 MADE imposes the autoregressive constraint with binary masks so that one forward pass evaluates every conditional. Number the hidden units by the largest input index they may depend on. A hidden unit with index $m$ may read inputs of index at most $m$. An output unit for coordinate $d$ may read hidden units of index strictly less than $d$. The strict inequality at the output stops $x_d$ from depending on itself.
+
+\begin{resultbox}[Mask connectivity]
+With degrees $m^0$ on inputs/outputs and $m^1$ on hidden units,
+\[
+[M^W]_{ki}=\mathbf 1\{m^1(k)\ge m^0(i)\},\qquad
+[M^V]_{dk}=\mathbf 1\{m^0(d)>m^1(k)\}.
+\]
+A dependence of position $j$ on earlier position $r$ has a path if and only if some hidden degree lies in $\{r,\ldots,j-1\}$. One unit of each degree $1,\ldots,D-1$ is necessary and sufficient for full connectivity of the ordering.
+\end{resultbox}
+The same degree rule between successive hidden layers preserves the invariant at any depth. Weakening the output rule to a non-strict inequality allows $\lambda_d$ to depend on $x_d$, destroying normalization of the product of Bernoulli factors.
 
 \begin{practbox}[A mask you can draw]
 For $D=3$ and one hidden layer with indices $(1,2,2)$, say which inputs each output may use.
@@ -56,8 +101,455 @@ For $D=3$ and one hidden layer with indices $(1,2,2)$, say which inputs each out
 Output $1$ may use hidden units of index $<1$. There are none. So $p(x_1)$ is unconditional. Output $2$ may use the hidden unit of index $1$, which itself may see only $x_1$. Output $3$ may use all three hidden units, hence $x_1$ and $x_2$, and not $x_3$. That is an autoregressive family.
 \end{solbox}
 
-\section{Graphs}
+\section{Graphs, orderings, and d-separation of parents}
 
-A directed acyclic graph defines a legal joint by multiplying one conditional per node, given its parents. A topological order is an order in which every parent appears before its child. Many orders can be legal. A directed cycle does not define a joint by the same multiplication: the conditionals refer to each other and need not be normalizable. A rooted forest is the special case in which each node has at most one parent. Markov chains are the path case, homogeneous when the conditional does not depend on time, inhomogeneous when it does.
+A directed acyclic graph defines a legal joint by multiplying one conditional per node, given its parents. A topological order is an order in which every parent appears before its child. Many orders can be legal. Induct along any topological order: each conditional sums to one in its child, so the product is a pmf. Acyclicity is what supplies the order.
+
+A directed cycle does not define a joint by the same multiplication: the conditionals refer to each other and need not be normalizable. For a two-node cycle the sum of the product of conditionals is $Z=1+(\theta_0-\theta_1)(\varphi_0-\varphi_1)$, equal to one if and only if at least one conditional ignores its parent.
+
+A rooted forest is the special case in which each node has at most one parent. The number of topological orders of a rooted forest on $n$ vertices is $n!/\prod_v h_v$, where $h_v$ is the subtree size at $v$. Restoring an edge keeps exactly those forest orders that also put the new parent before the child. Markov chains are the path case, homogeneous when the conditional does not depend on time, inhomogeneous when it does.
 
 The KL projection of a full joint onto an autoregressive family is the set of conditional tables of the true joint, in that order. The KL gap equals a conditional mutual information: the information about $x_d$ that the discarded non-parents still carry. Maximum likelihood on a fully observed table estimates those conditionals by counts.
+
+\section{Gaussian class-conditional Bayes classifiers}
+
+When class-conditional laws are Gaussian, the Bayes classifier is logistic in the features after taking the logit of $p(y=1\given x)$. Shared covariance cancels the pure quadratic terms and leaves an affine logit $w^\top x+b$ with $w=\Sigma^{-1}(\mu_1-\mu_0)$. Unequal covariances leave a quadratic discriminant. The generative shared-covariance model has $1+2D+D(D+1)/2$ parameters; logistic regression has only $D+1$. The fiber over a fixed $(w,b)$ is diffeomorphic to $\{\Sigma\succ 0\}\times\R^D$.
+
+Masking coordinates and classifying from the marginal of the observed block inverts $\Sigma_{VV}$, not the conditional covariance $S_{V\mid M}$. Mean-imputing the masked block inside the full-data discriminant uses a different coefficient and agrees with the marginal Bayes rule only under an orthogonality condition on the class-mean gap.
+
+The shared-covariance MLE is the class proportion, the two class sample means, and the pooled scatter; uniqueness follows from $\lambda-1-\log\lambda\ge 0$. Logistic NLL is convex, but under linear separation the unpenalized MLE does not exist. An $\ell_2$ penalty on $w$ restores a unique minimizer.
+
+\section{Homework 1 problems}
+
+\begin{hwqbox}[Homework 1, problem 3.1]
+Derive the parameter counts $N_m^{\mathrm{nh}}$ and $N_m^{\mathrm{h}}$ for inhomogeneous and homogeneous Markov models of order $m$ on length $n$ over an alphabet of size $K$. Check the cases $m=0$ and $m=n-1$, and interpret the difference.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.1]
+\[
+N_m^{\mathrm{nh}}
+=\sum_{i=1}^n(K-1)K^{\min(m,i-1)}
+=(K^m-1)+(n-m)(K-1)K^m.
+\]
+The sum splits into the growing prefix $i\le m$, which contributes $K^m-1$, and the $n-m$ full windows of length $m$. Checks: $m=0$ gives $N=n(K-1)$; $m=n-1$ gives $N=K^n-1$, the full simplex.
+
+For the homogeneous subfamily, the prefix $x_{1:m}$ has an arbitrary pmf ($K^m-1$ parameters) and all later positions share one kernel ($K^m(K-1)$ parameters):
+\[
+N_m^{\mathrm{h}}=K^m-1+(K-1)K^m=K^{m+1}-1.
+\]
+Same checks: $m=0$ gives $K-1$; $m=n-1$ gives $K^n-1$. Difference:
+\[
+N_m^{\mathrm{nh}}-N_m^{\mathrm{h}}=(n-m-1)(K-1)K^m.
+\]
+If $n=m+1$, the difference is $0$: both families equal the full simplex.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 3.1(a)]
+For the binary mixture transition $c_{ab}=\lambda t_1(a)+(1-\lambda)t_2(b)$, show that the image lies in the hyperplane $c_{00}-c_{01}-c_{10}+c_{11}=0$, that every cube point on that hyperplane is attained, and that the model dimension is $3$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.1(a)]
+The cross difference vanishes because both $c_{00}-c_{01}$ and $c_{10}-c_{11}$ equal $(1-\lambda)(t_2(0)-t_2(1))$. Conversely, every $c\in[0,1]^4$ on this hyperplane is attained: additivity gives $c_{ab}=A_a+B_b$, and the normalized choice $B_b=\min_a c_{ab}$, $A_a=c_{ab}-B_b$ yields nonnegative $A,B$ with $\max A+\max B\le 1$. Set $\lambda=\max A$ and rescale to obtain $\alpha,\beta\in[0,1]^2$.
+
+The image is a full-dimensional subset of a $3$-dimensional affine subspace, intersected with the cube, with nonempty relative interior. Its dimension is $3$. A free conditional table has dimension $4$. The five nominal parameters therefore overcount: the fiber of a generic table has dimension $5-3=2$. The model cannot represent a conditional with a nonzero interaction, for example $c=(1,0,0,1)$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 3.2]
+Prove that the unique closest member of the inhomogeneous autoregressive family $Q_m^{\mathrm{nh}}$ to a positive joint $p$, in forward KL, is $q^\star(x)=\prod_i p(x_i\given c_i)$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.2]
+For $q(x)=\prod_i q_i(x_i\given c_i)$ and $q^\star(x)=\prod_i p(x_i\given c_i)$,
+\begin{align*}
+\KL(p\Vert q)
+&=\KL(p\Vert q^\star)+\sum_{i=1}^n\E_p\Big[\log\frac{p(x_i\given c_i)}{q_i(x_i\given c_i)}\Big]\\
+&=\KL(p\Vert q^\star)+\sum_{i=1}^n\E\big[\KL\big(p(\cdot\given c_i)\,\|\,q_i(\cdot\given c_i)\big)\big].
+\end{align*}
+Each inner KL is nonnegative. Hence $\KL(p\Vert q)\ge\KL(p\Vert q^\star)$, with equality if and only if $q_i(\cdot\given c)=p(\cdot\given c)$ for every $i$ and every context (all contexts have positive probability because $p>0$). The unique closest member is $q^\star$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 3.2(a)]
+Express the gap $\KL(p\Vert q^\star)$ as a sum of conditional mutual informations. Specialize to $m=0$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.2(a)]
+Chain rule: $\log p(x)=\sum_i\log p(x_i\given x_{<i})$ and $\log q^\star(x)=\sum_i\log p(x_i\given c_i)$. For $i\le m+1$ the window $c_i$ is the entire past, so those terms cancel. For $i\ge m+2$,
+\[
+\log\frac{p(x_i\given x_{<i})}{p(x_i\given c_i)}
+\]
+is the integrand of $I(X_i;X_{1:i-m-1}\given X_{i-m:i-1})$. Therefore
+\[
+\KL(p\Vert q^\star)=\sum_{i=m+2}^{n}I\big(X_i;\,X_{1:i-m-1}\given X_{i-m:i-1}\big).
+\]
+It is zero if and only if $p$ itself factors through windows of length $m$. For $m=0$,
+\[
+\KL(p\Vert q^\star)=\sum_{i=2}^n I(X_i;X_{1:i-1})=\sum_i H(X_i)-H(X),
+\]
+the total correlation of $p$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 3.2(b)]
+Show that maximum likelihood tables for an inhomogeneous Markov model are the empirical conditionals, and relate this to the KL projection of problem~3.2.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.2(b)]
+The average log-likelihood of $N$ i.i.d.\ sequences is $\sum_i\sum_{c,k}\hat p_i(c,k)\log q_i(k\given c)$. For each $(i,c)$ with a positive count, the Lagrangian of $\sum_k N_i(c,k)\log q_k$ subject to $\sum_k q_k=1$ has solution
+\[
+\hat q_i(k\given c)=\frac{N_i(c,k)}{N_i(c)}.
+\]
+These are the conditionals of the empirical distribution $\hat p$. Maximizing the likelihood is the same as minimizing $\KL(\hat p\Vert q)$, whose unique minimizer on tables that are seen in the data is the $q^\star$ of problem~3.2 built from $\hat p$. Unseen contexts are unidentified.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 3.2(c)]
+Derive the best homogeneous model $q_h^\star$ and express the excess KL relative to the inhomogeneous projection as a weighted sum of KLs between position-dependent kernels and the tied kernel.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.2(c)]
+$\log q=\log\pi(x_{1:m})+\sum_{i>m}\log T(x_i\given c_i)$. The prefix expectation $\E\log\pi(X_{1:m})$ is maximized uniquely by the true marginal $\pi^\star=p_{1:m}$. The shared kernel maximizes
+\[
+\sum_{i=m+1}^n\sum_{c,k}p_i(c,k)\log T(k\given c),
+\]
+so
+\[
+T^\star(k\given c)=\frac{\sum_{i>m}p_i(c,k)}{\sum_{i>m}p_i(c)}
+=\sum_{i=m+1}^n w_i(c)\,p_i(k\given c),
+\]
+with weights $w_i(c)=p_i(c)/\sum_{j>m}p_j(c)$. The excess KL is
+\[
+\KL(p\Vert q_h^\star)-\KL(p\Vert q^\star)
+=\sum_{i=m+1}^n\sum_c p_i(c)\,\KL\big(p_i(\cdot\given c)\,\Vert\,T^\star(\cdot\given c)\big).
+\]
+It vanishes if and only if $p_i(\cdot\given c)$ does not depend on $i$, for every context that occurs after time $m$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 3.3]
+For the DAG of Figure~1 (edges $B\to E$, $B\to G$, $E\to G$, $A\to D$, $A\to C$, $D\to F$, $C\to F$), write the factorization, count binary CPT parameters, and prove that any finite DAG factorization is normalized.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.3]
+Parents: $A,B$ are roots; $\mathrm{pa}(C)=\{A\}$, $\mathrm{pa}(D)=\{A\}$, $\mathrm{pa}(E)=\{B\}$, $\mathrm{pa}(F)=\{C,D\}$, $\mathrm{pa}(G)=\{B,E\}$.
+\[
+p(x)=p(x_A)p(x_B)p(x_C\given x_A)p(x_D\given x_A)p(x_E\given x_B)p(x_F\given x_C,x_D)p(x_G\given x_B,x_E).
+\]
+Binary conditional probability tables contribute $2^{|\mathrm{pa}(v)|}$ free parameters: $1+1+2+2+2+4+4=16$.
+
+\textbf{Normalization on any finite DAG.} Induct along a topological order $v_1,\ldots,v_n$. The empty product sums to $1$. Given that the marginal of the first $t-1$ variables is a pmf,
+\[
+\sum_{x_{v_t}}p(x_{v_t}\given x_{\mathrm{pa}(v_t)})=1
+\]
+for every parent configuration, and the parents are among the previous variables. Multiplying and summing over $x_{v_t}$ leaves the previous marginal. After $n$ steps the product sums to $1$. Acyclicity is what supplies the topological order.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 3.3(a)]
+Count the valid topological orderings of Figure~1, and give the probability that a uniform random permutation is valid.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.3(a)]
+On $\{B,E,G\}$ the only order is $B,E,G$. On $\{A,C,D,F\}$, $A$ is first, $F$ is last, and $\{C,D\}$ is free: $2$ orders. Interleaving a block of $3$ with a block of $4$ can be done in $\binom{7}{3}$ ways. Total:
+\[
+\binom{7}{3}\cdot 1\cdot 2=70.
+\]
+Out of $7!=5040$ permutations, the probability is $70/5040=1/72$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 3.3(b)]
+Delete $C\to F$ and $E\to G$ to obtain a rooted forest. Count topological orders by the subtree-size formula, then restore each edge (and both) by conditioning on the forest orders, and compare with problem~3.3(a).
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.3(b)]
+For a rooted tree in which every node has at most one parent and edges point away from the root, the number of orders in which every node precedes its descendants is $n!/\prod_v h_v$, where $h_v$ is the subtree size at $v$. A forest extends by the same formula.
+
+Delete $C\to F$ and $E\to G$. The forest is $B$ with leaf children $E,G$ ($h_B=3$, $h_E=h_G=1$) and $A$ with child $C$ and child $D\to F$ ($h_A=4$, $h_D=2$, $h_C=h_F=1$). Then $\prod_v h_v=4\cdot 3\cdot 2=24$ and $7!/24=210$.
+
+Restoring $E\to G$: $E$ and $G$ are symmetric leaves, so exactly half survive: count $105$. Restoring $C\to F$: inside $A$'s tree the three equally likely orders of $\{C,D,F\}$ with $D$ before $F$ are $CDF$, $DCF$, $DFC$, and the first two have $C$ before $F$. Fraction $2/3$, count $140$. Restoring both: fraction $\tfrac12\cdot\tfrac23=\tfrac13$, count $70$, matching problem~3.3(a).
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 3.3(c)]
+For a two-node directed cycle with binary conditionals parameterized by $(\theta_0,\theta_1)$ and $(\varphi_0,\varphi_1)$, compute the normalizing constant $Z$ of the product of conditionals, characterize when $Z=1$, and explain why dropping $\log Z$ from maximum likelihood is incorrect when $Z$ depends on the parameters.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 3.3(c)]
+\begin{align*}
+q(0,0)&=(1-\theta_0)(1-\varphi_0),&
+q(1,0)&=\theta_0(1-\varphi_1),\\
+q(0,1)&=(1-\theta_1)\varphi_0,&
+q(1,1)&=\theta_1\varphi_1.
+\end{align*}
+Summing and cancelling leaves $Z=1+(\theta_0-\theta_1)(\varphi_0-\varphi_1)$. So $Z=1$ if and only if $\theta_0=\theta_1$ or $\varphi_0=\varphi_1$, i.e.\ at least one of the two conditionals ignores its parent. Otherwise the product is not a pmf.
+
+Maximum likelihood needs $\sum_x\log(q_\theta(x)/Z(\theta))$. Dropping $\log Z(\theta)$ is not the log-likelihood as soon as $Z$ depends on $\theta$: the score misses $-\nabla\log Z$, and the parameters remain coupled through the normalizer, which a DAG factorization would have avoided.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.1]
+Count parameters of FVSBN and NADE on $\{0,1\}^D$. For $D=784$, find the largest hidden width $D_h$ for which NADE has fewer parameters than FVSBN.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.1]
+FVSBN: one bias per coordinate, and $w_d\in\R^{d-1}$ for $d\ge 2$.
+\[
+D+\sum_{d=2}^D(d-1)=D+\frac{D(D-1)}{2}=\frac{D(D+1)}{2}.
+\]
+NADE: $W$ has $D_h(D-1)$ entries, $c$ has $D_h$, each of the $D-1$ conditionals $d\ge 2$ has a vector $v_d$ and a bias, and $b_1$ is one more bias.
+\[
+D_h(D-1)+D_h+(D-1)D_h+D=D_h(2D-1)+D.
+\]
+NADE is smaller when $D_h<D(D-1)/(2(2D-1))$. For $D=784$, the threshold is $306936/1567\approx 195.875$. The largest such integer is $D_h=195$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.1(a)]
+Count scalar multiplications inside the affine maps of $\log p(x)$ for FVSBN, for NADE recomputing each $a_d$, and for NADE with the recursion $a_{d+1}=a_d+W_{:,d}x_d$. Evaluate at $D=784$, $D_h=500$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.1(a)]
+Count products inside the affine maps, not evaluations of $\sigma$, $\log$, or $\phi$.
+\begin{itemize}
+\item FVSBN: $w_d^\top x_{<d}$ costs $d-1$ products. Total $D(D-1)/2$. At $D=784$: $306936$.
+\item NADE, recomputing each $a_d$: total $D_h(D-1)(D+2)/2$. At $D=784$, $D_h=500$: $153859500$.
+\item NADE, recursion: total $2(D-1)D_h$. At the same size: $783000$.
+\end{itemize}
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.1(b)]
+Explain why sampling from NADE stays sequential, while evaluating $\log p(x)$ for a fixed $x$ can be parallelized across coordinates.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.1(b)]
+To sample $x_d$ one needs the conditional, whose input $a_d$ depends on $x_1,\ldots,x_{d-1}$. Those bits are not known until the previous draws have been made, so the $D$ draws form a chain. The recursion removes repeated work; it does not remove that chain.
+
+For a fixed $x$, every bit is already known. Each $a_d=\sum_{k<d}W_{:,k}x_k$ is a function of known numbers, and the $D$ conditionals may be evaluated independently, in parallel.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.2]
+Derive the NADE gradients of the Bernoulli NLL with respect to $z_d$, $b_d$, $v_d$, $h_d$, $a_d$, $c$, and the columns of $W$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.2]
+The Bernoulli negative log-likelihood in the logit $z$ has derivative $\sigma(z)-x$. With $\delta_d=\sigma(z_d)-x_d$,
+\[
+\frac{\partial L}{\partial z_d}=\delta_d.
+\]
+Consequences, using $z_1=b_1$ and $z_d=v_d^\top h_d+b_d$ for $d\ge 2$:
+\begin{align*}
+\frac{\partial L}{\partial b_d}&=\delta_d &&(1\le d\le D),\\
+\frac{\partial L}{\partial v_d}&=\delta_d h_d &&(d\ge 2),\\
+\frac{\partial L}{\partial h_d}&=\delta_d v_d &&(d\ge 2),\\
+\frac{\partial L}{\partial a_d}&=\phi'(a_d)\odot(\delta_d v_d) &&(d\ge 2).
+\end{align*}
+The shared parameters touch every later conditional:
+\[
+\frac{\partial L}{\partial c}=\sum_{d=2}^D\frac{\partial L}{\partial a_d},\qquad
+\frac{\partial L}{\partial W_{:,k}}=x_k\sum_{d=k+1}^D\frac{\partial L}{\partial a_d}.
+\]
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.2(a)]
+Describe the $O(DD_h)$ backward accumulation for $\partial L/\partial W$, the MAP objective under a Gaussian prior (weight decay), and the $\tanh$ sign-and-permutation symmetries with their order $D_h!\,2^{D_h}$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.2(a)]
+Write $g_d=\partial L/\partial a_d$. After one forward pass set $S_{D-1}=g_D$ and $S_k=g_{k+1}+S_{k+1}$ while $k$ runs from $D-2$ down to $1$. Then $\partial L/\partial W_{:,k}=x_k S_k$. The accumulation is another $O(DD_h)$ pass.
+
+With $N$ observations and prior $\theta\sim\N(0,\tau^2 I)$, the negative log posterior, up to an additive constant, is
+\[
+J(\theta)=\sum_{n=1}^N L(x^{(n)};\theta)+\frac{1}{2\tau^2}\Vert\theta\Vert^2.
+\]
+Its gradient is the sum of the data gradients plus $\theta/\tau^2$ (weight decay with coefficient $1/\tau^2$).
+
+Symmetries of $\phi=\tanh$: for each hidden unit $j$ and each sign $\varepsilon_j\in\{\pm 1\}$, flip the signs of $c_j$, $W_{j,:}$, and every $(v_d)_j$. Then every logit is unchanged. Together with permutations of hidden units this is the hyperoctahedral action of order $D_h!\,2^{D_h}$. For a generic $\theta$ that order is a lower bound on the size of the fiber. There is no continuous scale symmetry for $\tanh$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.3]
+Characterize the FVSBN family $\mathcal F_D$, prove injectivity of the parameter map, compute $\dim\mathcal F_D$, and determine for which $D$ one has $\mathcal F_D=\mathcal P_D$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.3]
+For a positive pmf the logits $\ell_d(x_{<d})=\log\frac{p(x_d=1\given x_{<d})}{p(x_d=0\given x_{<d})}$ may be arbitrary real functions of the past. An FVSBN forces each logit to be affine, so $\mathcal F_D$ is exactly the set of positive pmfs whose autoregressive logits, in the fixed order, are affine.
+
+The map from parameters to pmfs is injective: an affine function on the cube determines its coefficients by $b=\ell(0)$ and $w_i=\ell(e_i)-\ell(0)$. The parameter count is $D(D+1)/2$, and the parameter domain $\R^{D(D+1)/2}$ is mapped diffeomorphically onto $\mathcal F_D$ by the coordinatewise sigmoid. Hence $\dim\mathcal F_D=D(D+1)/2$.
+
+$\dim\mathcal P_D=2^D-1$. Equality holds for $D=1$ and $D=2$. For $D=3$, $6<7$, and $2^D-1$ grows faster afterwards. Only $D=1,2$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.3(a)]
+Show that the parity distribution with mass $\theta/4$ on odd strings and $(1-\theta)/4$ on even strings ($\theta=1/10$) is not an FVSBN, in any order.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.3(a)]
+There are four odd strings and four even strings, and the masses sum to $1$. By symmetry it is enough to rule out the order $(x_1,x_2,x_3)$. The marginal of $(x_1,x_2)$ is uniform on four points. The conditional $p(x_3=1\given x_1,x_2)$ equals $\theta$ when $x_1\oplus x_2=0$ and equals $1-\theta$ when $x_1\oplus x_2=1$. With $L=\log(\theta/(1-\theta))=\log(1/9)$,
+\[
+\ell(0,0)=\ell(1,1)=L,\qquad \ell(1,0)=\ell(0,1)=-L.
+\]
+An affine function would satisfy $\ell(1,1)-\ell(1,0)-\ell(0,1)+\ell(0,0)=0$. The actual second-order interaction is $4L=-4\log 9\ne 0$. No FVSBN represents $p$, in any order.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.3(b)]
+Construct a ReLU NADE of width $D-1$ that represents the parity distribution for general $D$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.3(b)]
+Let $L=\log(\theta/(1-\theta))$ and $D_h=D-1$. Set $b_1=0$, and $v_d=0$, $b_d=0$ for $2\le d\le D-1$. Then the first $D-1$ bits are i.i.d.\ uniform.
+
+For the last conditional, let $s=\sum_{k=1}^{D-1}x_k$ and use one hidden unit per threshold: $c_j=1-j$, $W=\mathbf 1_{D_h\times(D-1)}$. Then $h_j=\mathrm{ReLU}(s-(j-1))$, and on integers $s$ one has $\mathbf 1_{s\ge k}=h_k-h_{k+1}$ (with $h_D:=0$). Taking $g(s)=L(-1)^s$ and collecting coefficients of the $h_j$ gives
+\[
+b_D=L,\qquad v_{D,1}=-2L,\qquad v_{D,j}=4L(-1)^j\ \text{for }j=2,\ldots,D-1.
+\]
+Then $z_D=L$ on even popcount and $z_D=-L$ on odd popcount, so the conditional probability that the total parity is odd equals $\theta$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.4]
+For Figure~2 with degrees $m^0(x)=(2,4,1,3)$ and the listed hidden degrees, write the masks $M^W$ and $M^V$, count the ones, list the variables each $\lambda_d$ can depend on in the order $x_3,x_1,x_4,x_2$, and find the smallest width that drops no dependence the order allows.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.4]
+\[
+[M^W]_{ki}=\mathbf 1\{m^1(k)\ge m^0(i)\},\qquad
+[M^V]_{dk}=\mathbf 1\{m^0(d)>m^1(k)\}.
+\]
+Columns of $M^W$ are $(x_1,x_2,x_3,x_4)$ with degrees $(2,4,1,3)$. Rows are $h_1,\ldots,h_6$:
+\[
+M^W=\begin{pmatrix}
+0&0&1&0\\
+1&0&1&1\\
+1&0&1&1\\
+0&0&1&0\\
+1&0&1&1\\
+0&0&1&0
+\end{pmatrix},\qquad
+\#\{1\}=12.
+\]
+Rows of $M^V$ are $\lambda_1,\ldots,\lambda_4$:
+\[
+M^V=\begin{pmatrix}
+1&0&0&1&0&1\\
+1&1&1&1&1&1\\
+0&0&0&0&0&0\\
+1&0&0&1&0&1
+\end{pmatrix},\qquad
+\#\{1\}=12.
+\]
+In the order $x_3,x_1,x_4,x_2$: $\lambda_3$ sees none; $\lambda_1$ sees $x_3$; $\lambda_4$ sees $x_3$ only (not $x_1$); $\lambda_2$ sees $x_3,x_1,x_4$. The network is not as expressive as a general autoregressive model for this order: the missing dependence is $x_1\to\lambda_4$.
+
+Smallest width that drops nothing the order allows: the consecutive pair $r\to r+1$ forces a hidden unit of degree exactly $r$, so $H\ge D-1$, and one unit of each degree $1,\ldots,D-1$ is sufficient.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.4(a)]
+Show that the same degree rule at every hidden layer preserves autoregressive normalization at any depth, and that a non-strict output mask can break normalization.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.4(a)]
+Use the same rule between successive hidden layers: a unit may read a previous unit only when its own degree is at least the previous unit's degree. By induction on depth, a unit of degree $m$ depends only on inputs of degree at most $m$. The output $\lambda_d$ reads only units of degree $<m^0(d)$, hence only inputs of degree $<m^0(d)$. It does not depend on $x_d$ or on any later variable. Therefore each factor $\mathrm{Bernoulli}(x_d\given\lambda_d)$ is a conditional probability given the earlier variables in the degree order, and the product is a pmf.
+
+If the output rule is weakened to $\mathbf 1\{m^0(d)\ge m^1(k)\}$, a unit of degree $m^0(d)$ may connect to $\lambda_d$, and that unit may depend on $x_d$ itself. Then $\lambda_d$ depends on $x_d$, the factor is not a conditional distribution in the remaining variables, and $\sum_{x_d}\mathrm{Bernoulli}(x_d\given\lambda_d(x_d))$ need not be $1$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 4.4(b)]
+With hidden degrees i.i.d.\ uniform on $\{1,\ldots,D-1\}$, compute $\E[\#\{M^W=1\}]$ and $\E[\#\{M^V=1\}]$, the connection probability of an allowed dependence $r\to j$, the probability that all allowed dependences are connected, and $\E[T]$ for the coupon-collector waiting time until every dependence is connected. Evaluate $\E[T]$ at $D=784$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 4.4(b)]
+For an input of degree $r$, $\mathbb P(m^1\ge r)=(D-r)/(D-1)$. Summing over $r$ gives $D/2$. With $H$ independent rows, $\E[\#\{M^W=1\}]=HD/2$. The same sum for outputs gives $\E[\#\{M^V=1\}]=HD/2$.
+
+An allowed dependence $r\to j$, with $j>r$, is connected when at least one hidden degree falls in an interval of $j-r$ integers:
+\[
+\mathbb P(\text{connected})=1-\Big(1-\frac{j-r}{D-1}\Big)^H.
+\]
+All allowed dependences are connected simultaneously if and only if every degree in $\{1,\ldots,D-1\}$ appears at least once. By inclusion-exclusion, for $H\ge D-1$,
+\[
+\mathbb P(\text{all connected})
+=\sum_{i=0}^{D-1}(-1)^{D-1-i}\binom{D-1}{i}\Big(\frac{i}{D-1}\Big)^H,
+\]
+and the probability is $0$ for $H<D-1$. The expected number of hidden units needed until every dependence is connected is
+\[
+\E[T]=(D-1)\sum_{k=1}^{D-1}\frac1k.
+\]
+For $D=784$, $M=783$ and $\E[T]=783\,H_{783}\approx 5669.69$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 6.1]
+Derive the Bayes classifier $p(y=1\given x)=\sigma(a(x))$ for class-conditional Gaussians, specialize to shared covariance (affine logit) and unequal covariances (quadratic discriminant).
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 6.1]
+\[
+p(y=1\given x)=\sigma(a(x)),\qquad
+a(x)=\log\frac{\pi}{1-\pi}+\log\N(x\given\mu_1,\Sigma_1)-\log\N(x\given\mu_0,\Sigma_0).
+\]
+Expanding the quadratic forms,
+\begin{align*}
+a(x)&=\log\frac{\pi}{1-\pi}-\tfrac12\log\frac{\det\Sigma_1}{\det\Sigma_0}\\
+&\quad+\tfrac12(x-\mu_0)^\top\Sigma_0^{-1}(x-\mu_0)-\tfrac12(x-\mu_1)^\top\Sigma_1^{-1}(x-\mu_1).
+\end{align*}
+Shared covariance $\Sigma_0=\Sigma_1=\Sigma$: the pure quadratic terms cancel and
+\[
+a(x)=w^\top x+b,\qquad
+w=\Sigma^{-1}\Delta,\qquad
+b=-w^\top\bar\mu+\log\frac{\pi}{1-\pi},
+\]
+with $\Delta=\mu_1-\mu_0$ and $\bar\mu=\tfrac12(\mu_0+\mu_1)$. Unequal covariances leave
+\[
+a(x)=x^\top Q x+L^\top x+c
+\]
+with $Q=\tfrac12(\Sigma_0^{-1}-\Sigma_1^{-1})$, $L=\Sigma_1^{-1}\mu_1-\Sigma_0^{-1}\mu_0$, and the corresponding constant $c$. This is the quadratic discriminant.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 6.1(a)]
+Count parameters of the shared-covariance generative model and of logistic regression. Describe the fiber over a fixed $(w,b)$ and show that every logistic parameter is realized.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 6.1(a)]
+Shared-covariance generative model: $1+2D+D(D+1)/2$ parameters. Logistic regression: $D+1$ parameters. Fix $(w,b)$. Choose $\Sigma\succ 0$ freely and $\bar\mu\in\R^D$ freely. Then $\Delta=\Sigma w$ is determined, the two means are $\bar\mu\pm\Delta/2$, and $\log(\pi/(1-\pi))=b+w^\top\bar\mu$ determines $\pi$. The fiber is diffeomorphic to $\{\Sigma\succ 0\}\times\R^D$ and has dimension $D(D+3)/2$, equal to the difference of the two parameter counts, so the map onto $(w,b)$ is a submersion.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 6.2]
+For shared-covariance class-conditional Gaussians, derive the Bayes classifier based only on the observed coordinates $x_V$, and explain why it inverts $\Sigma_{VV}$ rather than $S_{V\mid M}$.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 6.2]
+The marginal of a shared-covariance Gaussian is Gaussian with the corresponding block: $x_V\given y=c\sim\N(\mu_{c,V},\Sigma_{VV})$. Part~6.1 in the coordinates $V$ gives
+\[
+p(y=1\given x_V)=\sigma(w_V^\top x_V+b_V),
+\]
+\[
+w_V=\Sigma_{VV}^{-1}\Delta_V,\qquad
+b_V=-\Delta_V^\top\Sigma_{VV}^{-1}\bar\mu_V+\log\frac{\pi}{1-\pi}.
+\]
+The matrix $S_{V\mid M}$ is the conditional covariance of $x_V$ given $x_M$. It is not the covariance of this marginal. The Bayes rule for the masked problem inverts $\Sigma_{VV}$, not $S_{V\mid M}$.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 6.2(a)]
+Show that mean-imputing $x_M\leftarrow\bar\mu_M$ inside the full-data discriminant produces a different coefficient $w_V^{\mathrm{plug}}$, and give sufficient conditions for agreement with the marginal Bayes rule.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 6.2(a)]
+The full-data classifier has $w=\Sigma^{-1}\Delta$. Substituting $x_M\leftarrow\bar\mu_M$ produces the logit $w_V^{\mathrm{plug}}\cdot(x_V-\bar\mu_V)+\logit(\pi)$ with
+\[
+w_V^{\mathrm{plug}}=S_{V\mid M}^{-1}\bigl(\Delta_V-\Sigma_{VM}\Sigma_{MM}^{-1}\Delta_M\bigr),
+\]
+using the block formula $(\Sigma^{-1})_{VV}=S_{V\mid M}^{-1}$. The Bayes coefficient is $w_V^{\mathrm{Bayes}}=\Sigma_{VV}^{-1}\Delta_V$. Their difference rearranges to the condition
+\[
+\Sigma_{VM}\Sigma_{MM}^{-1}\bigl(\Delta_M-\Sigma_{MV}\Sigma_{VV}^{-1}\Delta_V\bigr)=0
+\]
+for agreement for every $x_V$. Sufficient conditions: $\Sigma_{VM}=0$, or $\Delta_M=\Sigma_{MV}\Sigma_{VV}^{-1}\Delta_V$. Mean imputation pretends the masked coordinates were observed and therefore uses the smaller conditional covariance rather than the marginal covariance.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 6.3]
+Derive the shared-covariance Gaussian MLE $(\hat\pi,\hat\mu_0,\hat\mu_1,\hat\Sigma)$ and prove uniqueness when $\hat\Sigma\succ 0$ and both classes are nonempty.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 6.3]
+The complete log-likelihood separates into a Bernoulli part in $\pi$ and a Gaussian part. $\hat\pi=N_1/N$. For fixed $\Sigma$, the quadratic is minimized in $\mu_c$ at the class sample mean $\hat\mu_c=N_c^{-1}\sum_{y_n=c}x_n$. With pooled scatter $\hat\Sigma=N^{-1}(S_0+S_1)\succ 0$, the profile objective is
+\[
+L(\Sigma)=-\frac N2\log\det\Sigma-\frac N2\tr(\Sigma^{-1}\hat\Sigma).
+\]
+If $\lambda_i>0$ are the eigenvalues of $\Sigma^{-1/2}\hat\Sigma\Sigma^{-1/2}$, then
+\[
+L(\hat\Sigma)-L(\Sigma)=\frac N2\sum_{i=1}^D(\lambda_i-1-\log\lambda_i).
+\]
+The scalar $\lambda-1-\log\lambda$ is minimized uniquely at $\lambda=1$, so $L(\hat\Sigma)\ge L(\Sigma)$ with equality if and only if $\Sigma=\hat\Sigma$. The MLE is unique.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 6.3(a)]
+Write the logistic NLL, prove convexity, and show that under strict linear separation there is no minimizer. Contrast with the generative MLE of problem~6.3.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 6.3(a)]
+With $z_n=w^\top x_n+b$ and $\varphi_n=(x_n,1)$,
+\[
+L(w,b)=\sum_{n=1}^N\big(\log(1+e^{z_n})-y_n z_n\big).
+\]
+The gradient is $\sum_n(\sigma(z_n)-y_n)\varphi_n$, and
+\[
+\nabla^2 L=\sum_n\sigma(z_n)(1-\sigma(z_n))\,\varphi_n\varphi_n^\top\succeq 0.
+\]
+The negative log-likelihood is convex.
+
+Suppose some $(w_0,b_0)$ strictly separates the sample. Along $\theta_t=t(w_0,b_0)$, $t\to\infty$, every class-$1$ logit tends to $+\infty$ and every class-$0$ logit tends to $-\infty$. Each summand tends to $0$, so $L(\theta_t)\to 0$. But for every finite $(w,b)$, every summand is strictly positive, so $L>0$. The infimum $0$ is not attained. There is no minimizer.
+
+By contrast, the generative MLE of problem~6.3 exists and is unique as soon as $\hat\Sigma\succ 0$ and both classes are nonempty, whether or not the sample is linearly separable.
+\end{hwsolbox}
+
+\begin{hwqbox}[Homework 1, problem 6.3(b)]
+Add $\tfrac\lambda2\lVert w\rVert^2$ with $\lambda>0$, leaving $b$ unpenalized. Prove that the penalized objective is strictly convex and coercive when both classes are nonempty, hence has a unique minimizer even under separation.
+\end{hwqbox}
+\begin{hwsolbox}[Homework 1, problem 6.3(b)]
+The Hessian becomes
+\[
+\sum_n\sigma_n(1-\sigma_n)\varphi_n\varphi_n^\top+\lambda\,\diag(I_D,0).
+\]
+For a nonzero direction $(v,c)$: if $v\ne 0$, the penalty contributes $\lambda\lVert v\rVert^2>0$; if $v=0$ and $c\ne 0$, the quadratic form is $c^2\sum_n\sigma_n(1-\sigma_n)>0$. The Hessian is positive definite everywhere, so the penalized objective is strictly convex and has at most one minimizer.
+
+It is coercive when both classes are nonempty. The unpenalized $L$ is nonnegative, so the objective is at least $\tfrac\lambda2\lVert w\rVert^2$ and tends to infinity as $\lVert w\rVert\to\infty$. If $w$ stays bounded and $b\to+\infty$, every class-$0$ term $\log(1+e^{z_n})\to\infty$. If $b\to-\infty$, every class-$1$ term tends to infinity. Thus a minimizer exists, and by strict convexity it is unique. The penalty stops $\lVert w\rVert$ from running off to infinity under separation.
+\end{hwsolbox}

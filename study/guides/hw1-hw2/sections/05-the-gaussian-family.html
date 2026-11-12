@@ -7,17 +7,292 @@ on the affine image of the column space. If \(A\Sigma A^\top\) is singular, \(y\
 <p>The moment proof is two lines. \(\mathbb{E}[y]=A\mu+b\) by linearity. The covariance is
 \[\mathbb{E}[(y-\mathbb{E} y)(y-\mathbb{E} y)^\top]=A \mathbb{E}[(x-\mu)(x-\mu)^\top] A^\top=A\Sigma A^\top.\]
 A Gaussian is determined by its mean and covariance, so the law is that Gaussian. The same calculation with \(A\) a row vector is the reparameterization trick in one coordinate: if \(\varepsilon\sim\mathcal{N}(0,1)\), then \(\mu+\sigma\varepsilon\sim\mathcal{N}(\mu,\sigma^2)\).</p>
+<p>A law defined by its moment generating function covers singular covariances as well: for every \(s\),
+\[\mathbb{E}[e^{s^\top y}]=e^{s^\top b} \mathbb{E}[e^{(A^\top s)^\top x}]
+=\exp\left(s^\top(A\mu+b)+\frac12 s^\top(A\Sigma A^\top)s\right).\]
+Jointly Gaussian random vectors are independent if and only if they are uncorrelated.</p>
 <aside class="box practice"><p class="box-title">Practice</p><p>Let \(x\sim\mathcal{N}(1,4)\) and \(y=3x-2\). Find \(\mathbb{E}[y]\) and \(\mathrm{Var}(y)\).</p></aside>
 <aside class="box solution"><p class="box-title">Worked solution</p><p>Mean \(3\cdot 1-2=1\). Variance \(3^2\cdot 4=36\). So \(y\sim\mathcal{N}(1,36)\).</p></aside>
-<h3>Conditionals and products</h3>
+<h3>Product of Gaussian densities</h3>
+<p>For \(\Sigma\succ 0\),
+\[\mathcal{N}(x\mid\mu,\Sigma)=(2\pi)^{-d/2}(\det\Sigma)^{-1/2}\exp\left(-\frac12(x-\mu)^\top\Sigma^{-1}(x-\mu)\right).\]
+The product of two such densities, as a function of \(x\), has precision equal to the sum of the precisions.
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: Gaussian product identity&lt;/p&gt;&lt;p&gt;\[\mathcal{N}(x\mid a,A) \mathcal{N}(x\mid b,B)=\mathcal{N}(a\mid b,A+B) \mathcal{N}(x\mid c,C),\]
+where
+\[C=(A^{-1}+B^{-1})^{-1},\qquad
+c=C(A^{-1}a+B^{-1}b),\]
+or, equivalently, the parallel-sum forms
+\[C=A(A+B)^{-1}B,\qquad
+c=B(A+B)^{-1}a+A(A+B)^{-1}b.\]&lt;/p&gt;&lt;/aside&gt;
+Integrating the product in \(x\) produces the constant \(Z=\mathcal{N}(a\mid b,A+B)\), because the remaining Gaussian integrates to one. If \(U\sim\mathcal{N}(a,A)\) and \(V\sim\mathcal{N}(b,B)\) are independent, that constant is the density of \(U-V\) at \(0\).</p>
+<p>Homework 1 asks this identity because it is Bayes' rule for a Gaussian likelihood and a Gaussian prior: posterior precision equals prior precision plus likelihood precision.</p>
+<h3>Conditionals without block inversion</h3>
 <p>For a joint Gaussian, the conditional of one block given another is Gaussian. Its mean is linear in the observation, and its covariance does not depend on the observation. That is why a linear-Gaussian encoder can be written in closed form, and why a neural encoder is the nonlinear replacement of that conditional mean and variance.</p>
-<p>The product of two Gaussian densities, as a function of \(x\), is an unnormalized Gaussian whose precision (inverse covariance) is the sum of the precisions. The normalizing constant of that product is itself a Gaussian density in the difference of the means. Homework 1 asks this identity because it is Bayes' rule for a Gaussian likelihood and a Gaussian prior: posterior precision equals prior precision plus likelihood precision.</p>
+<p>One can avoid inverting the full joint covariance. Set \(K=\Sigma_{yx}\Sigma_{xx}^{-1}\) (assuming \(\Sigma_{xx}\succ 0\)) and form the residual \(r=y-\mu_y-K(x-\mu_x)\). Then \(\mathrm{Cov}(r,x)=0\). Joint Gaussianity upgrades uncorrelated to independent, so
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: Gaussian conditional&lt;/p&gt;&lt;p&gt;\[y\mid x=x_0\sim\mathcal{N}\left(\mu_y+K(x_0-\mu_x), \Sigma_{yy}-\Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy}\right).\]&lt;/p&gt;&lt;/aside&gt;
+The subtracted term is positive semidefinite, so \(\mathrm{Cov}(y\mid x)\preceq\Sigma_{yy}\), with equality if and only if \(\Sigma_{yx}=0\), which for jointly Gaussian vectors is independence.</p>
+<h3>Linear-Gaussian models and Woodbury</h3>
+<p>Write \(y=Ax+b+\varepsilon\) with \(\varepsilon\sim\mathcal{N}(0,S)\) independent of \(x\sim\mathcal{N}(\mu,\Sigma)\). The joint \((x,y)\) is Gaussian with
+\[\begin{pmatrix}x\\ y\end{pmatrix}
+\sim\mathcal{N}\Bigg(
+\begin{pmatrix}\mu\\ A\mu+b\end{pmatrix},
+\begin{pmatrix}\Sigma &amp; \Sigma A^\top\\ A\Sigma &amp; S+A\Sigma A^\top\end{pmatrix}
+\Bigg).\]
+Conditioning \(x\) on \(y\) by the residual argument above inverts only \(R:=S+A\Sigma A^\top\):
+\[\mathrm{Cov}(x\mid y)=\Sigma-\Sigma A^\top R^{-1}A\Sigma,\qquad
+\mathbb{E}[x\mid y]=\mu+\Sigma A^\top R^{-1}\left(y-(A\mu+b)\right).\]
+The information form adds prior and likelihood precisions:
+\[\Sigma_{x\mid y}=(\Sigma^{-1}+A^\top S^{-1}A)^{-1},\qquad
+\mathbb{E}[x\mid y]=\Sigma_{x\mid y}\left(\Sigma^{-1}\mu+A^\top S^{-1}(y-b)\right).\]
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: Woodbury for the posterior covariance&lt;/p&gt;&lt;p&gt;\[(\Sigma^{-1}+A^\top S^{-1}A)^{-1}=\Sigma-\Sigma A^\top R^{-1}A\Sigma.\]&lt;/p&gt;&lt;/aside&gt;
+The matrix in front of the innovation \(y-(A\mu+b)\) is \(\mathrm{Cov}(x,y)\mathrm{Cov}(y)^{-1}\), the linear regression coefficient of \(x\) on \(y\).</p>
 <h3>Mixtures</h3>
 <p>A mixture \(p(x)=\sum_{k=1}^K \pi_k \mathcal{N}(x\mid\mu_k,\Sigma_k)\) with \(\pi_k&gt;0\) and \(\sum_k\pi_k=1\) is nonnegative and integrates to one. Its mean is \(\sum_k\pi_k\mu_k\). Its covariance is not the mixture of the covariances alone. The law of total variance adds the covariance of the component means:
 \[\mathrm{Cov}(x)=\mathbb{E}[\mathrm{Cov}(x\mid k)]+\mathrm{Cov}(\mathbb{E}[x\mid k]).\]
+In symbols, with \(\mu=\sum_k\pi_k\mu_k\),
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: Mixture moments&lt;/p&gt;&lt;p&gt;\[\mathrm{Cov}(x)
+=\underbrace{\sum_k\pi_k\Sigma_k}_{\text{within}}
++\underbrace{\sum_k\pi_k(\mu_k-\mu)(\mu_k-\mu)^\top}_{\text{between}}.\]&lt;/p&gt;&lt;/aside&gt;
 A single Gaussian cannot represent well-separated modes. A mixture can. Lecture 4, slides 3–11, uses the iris petals as the picture. The VAE notebook, part II, trains that comparison in two dimensions.</p>
-<h3>Maximum entropy</h3>
+<p>On the line, the equal mixture of \(\mathcal{N}(-a,1)\) and \(\mathcal{N}(a,1)\) has mean \(0\), variance \(1+a^2\), and excess kurtosis \(-2a^4/(1+a^2)^2&lt;0\) for \(a&gt;0\). A nondegenerate Gaussian has excess kurtosis \(0\), so the mixture is not Gaussian. Its modes bifurcate at \(a=1\): one mode for \(a\le 1\), two modes for \(a&gt;1\).</p>
+<h3>Maximum entropy and the Pythagorean identity</h3>
 <p>Among densities on \(\mathbb{R}^d\) with a fixed mean and a fixed covariance, the Gaussian has the largest entropy
 \[h(p)=-\int p\log p.\]
-For \(\mathcal{N}(\mu,\Sigma)\) the entropy is \(\frac{d}{2}\log(2\pi e)+\frac12\log\det\Sigma\). Subtracting two such entropies, and accounting for the cross term that appears when the means differ, is one derivation of the multivariate KL. The diagonal formula  is the coordinate form of that identity.</p>
+For \(\mathcal{N}(\mu,\Sigma)\) the entropy is \(\frac{d}{2}\log(2\pi e)+\frac12\log\det\Sigma\). Subtracting two such entropies, and accounting for the cross term that appears when the means differ, is one derivation of the multivariate KL  in Chapter Divergences.</p>
+<p>Let \(p\) be any density with mean \(\mu_p\) and covariance \(\Sigma_p\succ 0\), let \(g=\mathcal{N}(\mu_p,\Sigma_p)\), and let \(q\) be any Gaussian. The function \(\log(g/q)\) is a polynomial of degree at most \(2\). Any such polynomial has the same expectation under \(p\) and under \(g\), because \(p\) and \(g\) share moments of order \(0,1,2\). Therefore
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: Pythagorean identity for Gaussian projection&lt;/p&gt;&lt;p&gt;\[\mathrm{KL}(p\| q)=\mathrm{KL}(p\| g)+\mathrm{KL}(g\| q).\]&lt;/p&gt;&lt;/aside&gt;
+Since \(\mathrm{KL}(g\| q)\ge 0\), with equality if and only if \(q=g\), the unique closest Gaussian to \(p\) in forward KL is the moment-matched Gaussian \(g\). The gap equals \(h(g)-h(p)\), so \(h(p)\le h(g)\) with equality if and only if \(p=g\).</p>
+<h3>Autoregressive factorization of a nondegenerate Gaussian</h3>
+<p>Partition \(\Sigma\succ 0\) so that the last coordinate is \(x_d\). The Gaussian conditional of Section 3 gives
+\[x_d\mid x_{&lt;d}\sim\mathcal{N}(w_d^\top x_{&lt;d},\sigma_d^2),\]
+with unique coefficients \((w_d,\sigma_d^2)\), and the \(d=1\) factor equal to \(\mathcal{N}(0,\Sigma_{11})\). Hence
+\[p(x)=\prod_{d=1}^D \mathcal{N}(x_d\mid w_d^\top x_{&lt;d},\sigma_d^2).\]
+The conditional variance is the Schur complement of the leading principal submatrix, so \(\sigma_d^2=\det\Sigma_{1:d}/\det\Sigma_{1:d-1}\) and
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: Determinant factorization&lt;/p&gt;&lt;p&gt;\[\det\Sigma=\prod_{d=1}^D\sigma_d^2.\]&lt;/p&gt;&lt;/aside&gt;
+A strictly lower-triangular \(W\) has \(D(D-1)/2\) entries and there are \(D\) positive conditional variances, matching the \(D(D+1)/2\) free parameters of \(\Sigma\succ 0\). Conversely, \(x_d=w_d^\top x_{&lt;d}+\varepsilon_d\) with independent \(\varepsilon_d\sim\mathcal{N}(0,\sigma_d^2)\) yields
+\[x\sim\mathcal{N}\left(0, (I-W)^{-1}\Delta(I-W)^{-\top}\right),\qquad\Delta=\operatorname{diag}(\sigma_d^2)\succ 0.\]
+The sparsity pattern of \(W\) depends on the coordinate order: a hub-and-leaves covariance is sparse in the hub-first order and dense in the leaf-first order. Heteroscedastic conditionals such as \(\mathrm{Var}(x_2\mid x_1)=e^{ux_1}\) cannot arise from a jointly nondegenerate Gaussian, because the conditional covariance of a Gaussian never depends on the value of the conditioner.</p>
+<h3>Gaussian conditional negative log-likelihood</h3>
+<p>An autoregressive continuous model often emits, at each coordinate, a univariate Gaussian with mean \(\mu\) and log-variance \(s\), so the variance is \(e^s\). The negative log-density is
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: Univariate Gaussian NLL&lt;/p&gt;&lt;p&gt;\[
+\ell(x;\mu,s)=\frac12\log(2\pi)+\frac s2+\frac{(x-\mu)^2}{2e^s}.\]&lt;/p&gt;&lt;/aside&gt;
+The gradients are \(\partial\ell/\partial\mu=(\mu-x)e^{-s}\) and \(\partial\ell/\partial s=\frac12-(x-\mu)^2/(2e^s)\). The Hessian in \((\mu,s)\) has determinant \(-\frac12(x-\mu)^2 e^{-2s}\le 0\), so the loss is not jointly convex in \((\mu,s)\). In the natural parameters \(\eta_1=\mu e^{-s}\) and \(\eta_2=-\frac12 e^{-s}\) the same loss is strictly convex, because it is an exponential-family negative log-likelihood. Separate convexity in \(\mu\) (for fixed \(s\)) and in \(s\) (for fixed \(\mu\)) still holds.</p>
+<p>A single constant Gaussian fit of \(N\) samples has critical point \(\hat\mu=\bar x\) and \(e^{\hat s}=N^{-1}\sum(x_n-\bar x)^2\) whenever the sample variance is positive. With one training point the NLL is unbounded below (\(s\to-\infty\) with \(\mu=x\)). With two or more distinct points it is bounded below by \(\frac N2\log(2\pi e S/N)\). A flexible conditional model that can interpolate \((\mu_d,s_d)\) at the training inputs can again send \(s\to-\infty\) and drive the training NLL to \(-\infty\); a hard floor \(s_d\ge s_{\min}\) restores a finite lower bound. Mixtures of Gaussians inherit the same escape: one component collapses onto a single observation while another keeps the remaining points at finite density.</p>
+<h3>Homework 1 problems</h3>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.1</p><p>Let \(x\sim\mathcal{N}(\mu,\Sigma)\) and \(y=Ax+b\). Using the moment generating function, derive the law of \(y\), allowing singular \(A\Sigma A^\top\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.1</p><p>For every \(s\),
+\[\begin{aligned}
+\mathbb{E}[e^{s^\top y}]
+&amp;=\mathbb{E}[e^{s^\top(Ax+b)}]
+=e^{s^\top b} \mathbb{E}[e^{(A^\top s)^\top x}]\\
+&amp;=e^{s^\top b}\exp\left((A^\top s)^\top\mu+\frac12(A^\top s)^\top\Sigma A^\top s\right)\\
+&amp;=\exp\left(s^\top(A\mu+b)+\frac12 s^\top(A\Sigma A^\top)s\right).
+\end{aligned}\]
+Hence \(y\sim\mathcal{N}(A\mu+b, A\Sigma A^\top)\), possibly degenerate.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.1(a)</p><p>Let \(a,b\in\mathbb{R}\) and let \((x,y)\) be jointly Gaussian with cross-covariance \(C=\mathrm{Cov}(x,y)\). Derive the law of \(z=ax+by\). Discuss singularity when \(x\perp y\) or \(y=x\), and deduce \(|\rho|\le 1\) in dimension one.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.1(a)</p><p>\[z=ax+by\sim\mathcal{N}\left(a\mu_x+b\mu_y,  a^2\Sigma_x+b^2\Sigma_y+ab C+ab C^\top\right),\]
+because \(\mathrm{Cov}(ax,by)=ab C\).
+&lt;ul&gt;&lt;li&gt;&lt;p&gt;If \(x\perp y\), then \(C=0\). If \(\Sigma_x,\Sigma_y\succ 0\) and \((a,b)\ne(0,0)\), the covariance \(a^2\Sigma_x+b^2\Sigma_y\) is positive definite, so not singular.&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;If \(y=x\), then \(z=(a+b)x\) and the covariance is \((a+b)^2\Sigma_x\). It is singular whenever \(a+b=0\) and also whenever \(\Sigma_x\) itself is singular.&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;
+In dimension \(d=1\), with \(\sigma_x,\sigma_y&gt;0\) and correlation \(\rho=C/(\sigma_x\sigma_y)\),
+\[\mathrm{Var}(z)=a^2\sigma_x^2+b^2\sigma_y^2+2ab\rho \sigma_x\sigma_y.\]
+The right-hand side is a nonnegative quadratic form in \((a,b)\) for every \((a,b)\), so its matrix has determinant \(\sigma_x^2\sigma_y^2(1-\rho^2)\ge 0\). Thus \(|\rho|\le 1\). Equality \(|\rho|=1\) holds if and only if that matrix is singular, if and only if \(y-\mu_y\) is an affine function of \(x-\mu_x\) almost surely. This is Cauchy–Schwarz on the centered variables.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.1(b)</p><p>Let \(x\sim\mathcal{N}(0,I_d)\) and \(A\in\mathbb{R}^{m\times d}\) with \(m&gt;d\) and full column rank. Show that \(Ax\) has no density on \(\mathbb{R}^m\). Using a thin QR factorization \(A=QR\), relate the second moment \(\mathbb{E}[\lVert Ax\rVert^2]\) to \(\lVert A\rVert_F^2\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.1(b)</p><p>\(\mathrm{Cov}(Ax)=AA^\top\) has rank \(d&lt;m\), so the law of \(Ax\) is supported on the column space of \(A\). It is not absolutely continuous on \(\mathbb{R}^m\) and has no density there.</p>
+<p>Thin QR: \(A=QR\) with \(Q\in\mathbb{R}^{m\times d}\), \(Q^\top Q=I_d\), and \(R\in\mathbb{R}^{d\times d}\) invertible. Then \(Rx\sim\mathcal{N}(0,RR^\top)\) with \(RR^\top\succ 0\), and \(Ax=Qz\) with that nondegenerate \(z\in\mathbb{R}^d\).</p>
+<p>Two computations of the second moment:
+\[\mathbb{E}[\lVert Ax\rVert^2]=\mathbb{E}[x^\top A^\top Ax]=\operatorname{tr}(A^\top A)=\lVert A\rVert_F^2,\]
+and, since \(Q\) has orthonormal columns, \(\lVert Ax\rVert^2=\lVert z\rVert^2\) and \(\mathbb{E}[\lVert z\rVert^2]=\operatorname{tr}(RR^\top)=\lVert R\rVert_F^2=\lVert A\rVert_F^2\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.2</p><p>Derive the product identity for two nondegenerate Gaussian densities, including the parallel-sum forms of \((c,C)\) and the normalizing constant \(Z=\mathcal{N}(a\mid b,A+B)\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.2</p><p>The sum of the two precision quadratics has precision \(A^{-1}+B^{-1}\) and linear term \(A^{-1}a+B^{-1}b\). Therefore
+\[C=(A^{-1}+B^{-1})^{-1},\qquad c=C(A^{-1}a+B^{-1}b).\]
+The parallel-sum identities \(A^{-1}+B^{-1}=B^{-1}(A+B)A^{-1}\) give
+\[C=A(A+B)^{-1}B=B(A+B)^{-1}A,\qquad
+c=B(A+B)^{-1}a+A(A+B)^{-1}b.\]
+They agree with the precision form because \(CA^{-1}a=B(A+B)^{-1}a\) and \(CB^{-1}b=A(A+B)^{-1}b\).</p>
+<p>Integrating the product in \(x\) produces \(Z\), since \(\mathcal{N}(x\mid c,C)\) integrates to \(1\). If \(U\sim\mathcal{N}(a,A)\) and \(V\sim\mathcal{N}(b,B)\) are independent, that integral is the density of \(U-V\) at \(0\), and \(U-V\sim\mathcal{N}(a-b,A+B)\). Hence
+\[Z=\mathcal{N}(a\mid b, A+B)=\mathcal{N}(b\mid a, A+B).\]</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.2(a)</p><p>With prior \(\theta\sim\mathcal{N}(m_0,s_0^2)\) and i.i.d. observations \(x_i\mid\theta\sim\mathcal{N}(\theta,s^2)\), derive the Gaussian posterior, the marginal of the sample, the MLE, and the MAP. Discuss the limits \(n\to\infty\) and \(s_0\to\infty\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.2(a)</p><p>Likelihood in \(\theta\): \(\bar x\mid\theta\sim\mathcal{N}(\theta,s^2/n)\), and \(\mathcal{N}(\bar x\mid\theta,s^2/n)=\mathcal{N}(\theta\mid\bar x,s^2/n)\). Combine with the prior by the product identity:
+\[\frac1{s_n^2}=\frac1{s_0^2}+\frac n{s^2},\qquad
+s_n^2=\frac{s_0^2 s^2}{s^2+n s_0^2},\]
+\[m_n=s_n^2\left(\frac{m_0}{s_0^2}+\frac{n\bar x}{s^2}\right)
+=\frac{s^2}{s^2+n s_0^2} m_0+\frac{n s_0^2}{s^2+n s_0^2} \bar x.\]
+So \(\theta\mid x_{1:n}\sim\mathcal{N}(m_n,s_n^2)\). The posterior mean is the stated mixture of the prior mean and the MLE.</p>
+<p>Marginal of the sample: \(\mathbb{E}[x_i]=m_0\), \(\mathrm{Var}(x_i)=s^2+s_0^2\), and \(\mathrm{Cov}(x_i,x_j)=s_0^2\) for \(i\ne j\). Thus
+\[(x_1,\ldots,x_n)\sim\mathcal{N}\left(m_0\mathbf 1,  s^2 I+s_0^2\mathbf 1\mathbf 1^\top\right).\]
+The likelihood \(\prod_i\mathcal{N}(x_i\mid\theta,s^2)\) is maximized at the MLE \(\hat\theta_{\mathrm{MLE}}=\bar x\). The MAP is the posterior mode \(m_n\).</p>
+<p>As \(n\to\infty\), the weight on \(m_0\) tends to \(0\), the weight on \(\bar x\) tends to \(1\), and \(s_n^2\sim s^2/n\to 0\). The posterior collapses at the MLE. As \(s_0\to\infty\), \(s_n^2\to s^2/n\) and \(m_n\to\bar x\): a flat prior makes MAP equal MLE.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.3</p><p>Derive the conditional law of a Gaussian block \(y\) given \(x\) without inverting the full joint covariance. Show that the conditional covariance does not depend on the observation and that \(\mathrm{Cov}(y\mid x)\preceq\Sigma_{yy}\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.3</p><p>Set \(K=\Sigma_{yx}\Sigma_{xx}^{-1}\), which exists because \(\Sigma_{xx}\succ 0\). The residual
+\[r=y-\mu_y-K(x-\mu_x)\]
+is uncorrelated with \(x\): \(\mathrm{Cov}(r,x)=\Sigma_{yx}-K\Sigma_{xx}=0\). The pair \((r,x)\) is jointly Gaussian, so \(r\perp x\). Therefore
+\[y\mid x=x_0\sim\mathcal{N}\left(\mu_y+K(x_0-\mu_x), \mathrm{Cov}(r)\right),\]
+\[\mathrm{Cov}(r)=\Sigma_{yy}-\Sigma_{yx}\Sigma_{xx}^{-1}\Sigma_{xy}.\]
+The conditional covariance does not depend on \(x_0\). The subtracted term is positive semidefinite, so \(\mathrm{Cov}(y\mid x)\preceq\Sigma_{yy}\). Equality holds if and only if \(\Sigma_{yx}=0\). For jointly Gaussian vectors that is exactly independence of \(x\) and \(y\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.3(a)</p><p>For the linear-Gaussian model \(y=Ax+b+\varepsilon\) with \(\varepsilon\sim\mathcal{N}(0,S)\) independent of \(x\sim\mathcal{N}(\mu,\Sigma)\), derive both posterior forms for \(x\mid y\) and prove they agree via Woodbury's identity. Interpret the coefficient of the innovation.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.3(a)</p><p>The joint is
+\[\begin{pmatrix}x\\ y\end{pmatrix}
+\sim\mathcal{N}\Bigg(
+\begin{pmatrix}\mu\\ A\mu+b\end{pmatrix},
+\begin{pmatrix}\Sigma &amp; \Sigma A^\top\\ A\Sigma &amp; S+A\Sigma A^\top\end{pmatrix}
+\Bigg).\]
+The marginal is \(y\sim\mathcal{N}(A\mu+b, S+A\Sigma A^\top)\). Conditioning by problem 1.3 with \(R:=S+A\Sigma A^\top\) gives
+\[\mathrm{Cov}(x\mid y)=\Sigma-\Sigma A^\top R^{-1}A\Sigma,\qquad
+\mathbb{E}[x\mid y]=\mu+\Sigma A^\top R^{-1}\left(y-(A\mu+b)\right).\]
+The information form is
+\[\Sigma_{x\mid y}=(\Sigma^{-1}+A^\top S^{-1}A)^{-1},\qquad
+\mathbb{E}[x\mid y]=\Sigma_{x\mid y}\left(\Sigma^{-1}\mu+A^\top S^{-1}(y-b)\right).\]
+Woodbury's identity is exactly
+\[(\Sigma^{-1}+A^\top S^{-1}A)^{-1}=\Sigma-\Sigma A^\top R^{-1}A\Sigma,\]
+so the covariances agree. For the means, \(\Sigma_{x\mid y}\Sigma^{-1}=I-\Sigma_{x\mid y}A^\top S^{-1}A\), hence the information-form mean equals
+\[\mu+\Sigma_{x\mid y}A^\top S^{-1}\left(y-(A\mu+b)\right).\]
+The remaining identity \(\Sigma_{x\mid y}A^\top S^{-1}=\Sigma A^\top R^{-1}\) follows by multiplying on the left by \(\Sigma^{-1}+A^\top S^{-1}A\):
+\[\begin{aligned}
+(\Sigma^{-1}+A^\top S^{-1}A)\Sigma A^\top R^{-1}
+&amp;=A^\top(I+S^{-1}A\Sigma A^\top)R^{-1}
+=A^\top S^{-1}(S+A\Sigma A^\top)R^{-1}
+=A^\top S^{-1}.
+\end{aligned}\]
+The matrix in front of the innovation is \(\mathrm{Cov}(x,y)\mathrm{Cov}(y)^{-1}\), the linear regression coefficient of \(x\) on \(y\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.4</p><p>For a Gaussian mixture with weights \(\pi_k\) and components \(\mathcal{N}(\mu_k,\Sigma_k)\), derive the mean and the within/between decomposition of the covariance.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.4</p><p>Let \(K\) be a discrete component with \(\mathbb P(K=k)=\pi_k\), and \(x\mid K=k\sim\mathcal{N}(\mu_k,\Sigma_k)\). Then
+\[\mathbb{E}[x]=\sum_k\pi_k\mu_k=:\mu,\qquad
+\mathbb{E}[xx^\top]=\sum_k\pi_k(\Sigma_k+\mu_k\mu_k^\top).\]
+Therefore
+\[\mathrm{Cov}(x)
+=\underbrace{\sum_k\pi_k\Sigma_k}_{\text{within}}
++\underbrace{\sum_k\pi_k(\mu_k-\mu)(\mu_k-\mu)^\top}_{\text{between}}.\]</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.4(a)</p><p>For the equal mixture of \(\mathcal{N}(-a,1)\) and \(\mathcal{N}(a,1)\) on the line, compute mean, variance, and excess kurtosis. Show that \(p\) is not Gaussian. Determine the number of modes as a function of \(a&gt;0\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.4(a)</p><p>Mean: \(\frac12(-a)+\frac12 a=0\). Variance: within contribution \(1\), between contribution \(a^2\), so \(\mathrm{Var}(x)=1+a^2\).</p>
+<p>For \(Z\sim\mathcal{N}(a,1)\), \(\mathbb{E}[Z^4]=a^4+6a^2+3\). The same value holds at \(-a\), so \(\mathbb{E}_p[x^4]=a^4+6a^2+3\). Excess kurtosis:
+\[\frac{\mathbb{E}[x^4]}{\mathrm{Var}(x)^2}-3
+=\frac{a^4+6a^2+3}{(1+a^2)^2}-3
+=\frac{-2a^4}{(1+a^2)^2}&lt;0
+\quad(a&gt;0).\]
+A nondegenerate Gaussian has excess kurtosis \(0\), so \(p\) is not Gaussian. Equivalently, its mgf is \(\cosh(at) e^{t^2/2}\), which is not the mgf of a Gaussian.</p>
+<p>Modes. The unnormalized density \(h(x)=e^{-(x+a)^2/2}+e^{-(x-a)^2/2}\) has every critical point in \((-a,a)\), where
+\[h'(x)=0\iff \frac{a+x}{a-x}=e^{2ax}.\]
+The function \(k(x)=\log(a+x)-\log(a-x)-2ax\) satisfies \(k(0)=0\) and
+\[k'(x)=2a\frac{x^2-(a^2-1)}{a^2-x^2}.\]
+Also \(h''(0)=2(a^2-1)e^{-a^2/2}\).
+&lt;ul&gt;&lt;li&gt;&lt;p&gt;If \(a&lt;1\), then \(k'(x)&gt;0\) on \((0,a)\), so \(x=0\) is the only root and \(h''(0)&lt;0\): one mode.&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;If \(a=1\), still only one root; near \(0\), \(h''(x)=-2x^2+O(x^4)\), so \(x=0\) is a strict local maximum: one mode.&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;If \(a&gt;1\), then \(k'\) changes from negative to positive at \(\sqrt{a^2-1}\), and \(k(a^-)=+\infty\). So \(k\) has exactly one positive root. Together with \(x=0\) and the negative root there are three critical points, with \(h''(0)&gt;0\): two modes.&lt;/p&gt;&lt;/li&gt;&lt;/ul&gt;
+Thus \(p\) has two modes if and only if \(a&gt;1\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.4(b)</p><p>(i) Derive the multivariate Gaussian KL formula . (ii) Prove the Pythagorean identity \(\mathrm{KL}(p\| q)=\mathrm{KL}(p\| g)+\mathrm{KL}(g\| q)\) for \(g=\mathcal{N}(\mu_p,\Sigma_p)\) and any Gaussian \(q\), deduce the maximum-entropy property of Gaussians, and apply it to the mixture in (a).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.4(b)</p><p>(i) For \(p_i=\mathcal{N}(\mu_i,\Sigma_i)\), \(\Sigma_i\succ 0\), formula  holds. Proof: \(-\mathbb{E}_{p_0}\log p_1\) contributes \(\frac12\log\det\Sigma_1+\frac12\mathbb{E}[(x-\mu_1)^\top\Sigma_1^{-1}(x-\mu_1)]\), and
+\[\mathbb{E}_{p_0}[(x-\mu_1)^\top\Sigma_1^{-1}(x-\mu_1)]
+=\operatorname{tr}(\Sigma_1^{-1}\Sigma_0)+(\mu_0-\mu_1)^\top\Sigma_1^{-1}(\mu_0-\mu_1).\]
+Subtracting \(h(p_0)=\frac d2\log(2\pi e)+\frac12\log\det\Sigma_0\), and cancelling \(\frac d2\log(2\pi)\), leaves .</p>
+<p>(ii) Let \(g=\mathcal{N}(\mu_p,\Sigma_p)\) and let \(q\) be any Gaussian. The function \(\log(g/q)\) is a polynomial of degree at most \(2\). Any such polynomial has the same expectation under \(p\) and under \(g\), because \(p\) and \(g\) share their moments of order \(0,1,2\). Therefore
+\[\mathrm{KL}(p\| q)-\mathrm{KL}(p\| g)
+=\mathbb{E}_p\log\frac gq
+=\mathbb{E}_g\log\frac gq
+=\mathrm{KL}(g\| q),\]
+which is \(\mathrm{KL}(p\| q)=\mathrm{KL}(p\| g)+\mathrm{KL}(g\| q)\). Since \(\mathrm{KL}(g\| q)\ge 0\), with equality if and only if \(q=g\), the unique minimizer of \(\mathrm{KL}(p\| q)\) over Gaussians \(q\) is \(q^\star=g\). The minimum value is \(\mathrm{KL}(p\| g)=h(g)-h(p)\), because \(\mathbb{E}_p\log g=\mathbb{E}_g\log g=-h(g)\). Applying (i) to the pair \((g,q)\) writes the excess \(\mathrm{KL}(g\| q)\) in closed form.</p>
+<p>In particular \(h(p)\le h(g)\), with equality if and only if \(p=g\). Among densities with a fixed mean and a fixed positive definite covariance, the Gaussian has the largest differential entropy.</p>
+<p>Applied to the mixture in (a): the moment-matched Gaussian is \(\mathcal{N}(0,1+a^2)\), and the minimal KL to a Gaussian is \(h(\mathcal{N}(0,1+a^2))-h(p)&gt;0\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.5</p><p>Show that every nondegenerate Gaussian on \(\mathbb{R}^D\) factors uniquely as \(\prod_d\mathcal{N}(x_d\mid w_d^\top x_{&lt;d},\sigma_d^2)\), prove \(\det\Sigma=\prod_d\sigma_d^2\), and recover the covariance as \((I-W)^{-1}\Delta(I-W)^{-\top}\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.5</p><p>Partition \(\Sigma\) so that the last coordinate is \(x_d\). By problem 1.3, with \(x_{&lt;d}\) in the role of the conditioning variable,
+\[w_d=\Sigma_{&lt;d}^{-1}\Sigma_{&lt;d,d},\qquad
+\sigma_d^2=\Sigma_{dd}-\Sigma_{d,&lt;d}\Sigma_{&lt;d}^{-1}\Sigma_{&lt;d,d},\]
+and \(x_d\mid x_{&lt;d}\sim\mathcal{N}(w_d^\top x_{&lt;d},\sigma_d^2)\), with the \(d=1\) factor equal to \(\mathcal{N}(0,\Sigma_{11})\). The conditional law of a Gaussian is unique, so \((w_d,\sigma_d^2)\) is unique, and so is the factorization.</p>
+<p>The conditional variance is the Schur complement of the leading principal submatrix \(\Sigma_{1:d-1}\). The determinant factorization of a Schur complement gives \(\sigma_d^2=\det\Sigma_{1:d}/\det\Sigma_{1:d-1}\), with the convention \(\det\Sigma_{1:0}=1\). Therefore \(\det\Sigma=\prod_{d=1}^D\sigma_d^2\).</p>
+<p>A strictly lower-triangular \(W\) has \(D(D-1)/2\) entries and there are \(D\) positive conditional variances, hence \(D(D+1)/2\) free parameters, the same number as a positive definite covariance. Every \(\Sigma\succ 0\) arises exactly once.</p>
+<p>Conversely, \(x_d=w_d^\top x_{&lt;d}+\varepsilon_d\) with independent \(\varepsilon_d\sim\mathcal{N}(0,\sigma_d^2)\) is \(x=(I-W)^{-1}\varepsilon\). The matrix \(I-W\) is unit lower triangular, hence invertible, and \(\varepsilon\sim\mathcal{N}(0,\operatorname{diag}(\sigma_d^2))\) is nondegenerate. Thus
+\[x\sim\mathcal{N}\big(0, (I-W)^{-1}\Delta(I-W)^{-\top}\big),\qquad\Delta=\operatorname{diag}(\sigma_d^2)\succ 0.\]</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.5(a)</p><p>Identify the autoregressive factorization of the stationary AR(1) covariance \(\Sigma_{ij}=\sigma^2\rho^{|i-j|}/(1-\rho^2)\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.5(a)</p><p>The matrix is the covariance of
+\[x_1\sim\mathcal{N}\Big(0,\frac{\sigma^2}{1-\rho^2}\Big),\qquad
+x_d=\rho x_{d-1}+\varepsilon_d,\quad\varepsilon_d\sim\mathcal{N}(0,\sigma^2)\ \text{i.i.d.}\]
+For \(d=1\), \(\sigma_1^2=\sigma^2/(1-\rho^2)\). For \(d\ge 2\), the candidate \(w_d=\rho e_{d-1}\) satisfies the normal equations because
+\[\rho\cdot\frac{\sigma^2}{1-\rho^2}\rho^{|(j)-(d-1)|}
+=\frac{\sigma^2}{1-\rho^2}\rho^{|d-j|}.\]
+The conditional variance collapses to \(\sigma_d^2=\sigma^2\). So \(w_d\) has a single nonzero entry, equal to \(\rho\), in the coordinate of \(x_{d-1}\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.5(b)</p><p>For a hub-and-leaves Gaussian with hub variance \(1\), leaf residual variance \(s^2\), and hub–leaf covariance \(\beta\), compute the autoregressive factorization in hub-first and leaf-first orders. Show that the product of conditional variances equals \(\det\Sigma\) in both orders, and that the hub-first sparsity cannot be transplanted to the reversed order when \(D\ge 3\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.5(b)</p><p>In blocks,
+\[\Sigma=\begin{pmatrix}1 &amp; \beta\mathbf 1^\top\\ \beta\mathbf 1 &amp; s^2 I+\beta^2\mathbf 1\mathbf 1^\top\end{pmatrix}.\]
+<strong>Order \((1,\ldots,D)\).</strong> Here \(\sigma_1^2=1\). For each leaf, \(x_j=\beta x_1+\varepsilon_j\) with \(\varepsilon_j\) independent of \((x_1,\ldots,x_{j-1})\), so \(w_j=\beta e_1\) and \(\sigma_j^2=s^2\). There are \(D-1\) nonzero weights, and \(\prod_d\sigma_d^2=(s^2)^{D-1}\).</p>
+<p><strong>Order \((D,\ldots,1)\).</strong> Position \(m+1\) (\(0\le m\le D-2\)) is a leaf conditioned on \(m\) other leaves. The constant weight \(c=\beta^2/(s^2+m\beta^2)\) solves the normal equations, and
+\[\sigma^2
+=\beta^2+s^2-\frac{m\beta^4}{s^2+m\beta^2}
+=\frac{s^2\big(s^2+(m+1)\beta^2\big)}{s^2+m\beta^2}.\]
+The hub is last, with weight \(\beta/(s^2+(D-1)\beta^2)\) on every leaf and conditional variance \(\sigma_{\mathrm{hub}}^2=s^2/(s^2+(D-1)\beta^2)\). Nonzero weights: \(\sum_{m=1}^{D-2}m+(D-1)=D(D-1)/2\).</p>
+<p>The product of conditional variances equals \(\det\Sigma\) in every order. Multiplying the leaf formulas telescopes to \((s^2)^{D-2}(s^2+(D-1)\beta^2)\), and the hub factor cancels the second piece, leaving \((s^2)^{D-1}\).</p>
+<p>Sparsity cannot be transplanted: for a fixed ordering the pair \((W,\Delta)\) is unique. In the leaf-first ordering, the row in position \(m+1\) has \(m\) nonzero entries. For \(D\ge 3\) and \(m\ge 2\) that is already more than one, whereas every row of the hub-first factorization has at most one nonzero weight.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 1.5(c)</p><p>Can the heteroscedastic conditional \(x_1\sim\mathcal{N}(0,1)\), \(x_2\mid x_1\sim\mathcal{N}(0,e^{ux_1})\) with \(u\ne 0\) arise from a jointly nondegenerate Gaussian? Justify.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 1.5(c)</p><p>No. Under a jointly nondegenerate Gaussian, problem 1.3 says that \(\mathrm{Cov}(x_2\mid x_1)\) does not depend on the value of \(x_1\). Here that conditional variance is \(e^{ux_1}\), which is nonconstant because \(u\ne 0\).</p>
+<p>As a second witness: \(\mathbb{E}[x_2^4]=3e^{2u^2}\) and \((\mathbb{E}[x_2^2])^2=e^{u^2}\), so the excess kurtosis is \(3(e^{u^2}-1)&gt;0\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.1</p><p>For the Gaussian NLL , compute \(\partial\ell/\partial\mu\) and \(\partial\ell/\partial s\). For an autoregressive model with \(\mu_1=b_1\), \(s_1=e_1\), and \(\mu_d=v_d^\top h_d+b_d\), \(s_d=u_d^\top h_d+e_d\) for \(d\ge 2\), derive the gradients with respect to the biases, output weights, hidden state, pre-activations, and shared parameters \((c,W)\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.1</p><p>\[\delta^\mu:=\frac{\partial\ell}{\partial\mu}=(\mu-x)e^{-s},\qquad
+\delta^s:=\frac{\partial\ell}{\partial s}=\frac12-\frac{(x-\mu)^2}{2e^s}.\]
+Since \(L=\sum_d\ell(x_d;\mu_d,s_d)\),
+\[\begin{aligned}
+\frac{\partial L}{\partial b_d}&amp;=\delta^\mu_d, &amp;
+\frac{\partial L}{\partial e_d}&amp;=\delta^s_d,\\
+\frac{\partial L}{\partial v_d}&amp;=\delta^\mu_d h_d\ (d\ge 2), &amp;
+\frac{\partial L}{\partial u_d}&amp;=\delta^s_d h_d\ (d\ge 2),\\
+\frac{\partial L}{\partial h_d}&amp;=\delta^\mu_d v_d+\delta^s_d u_d, &amp;
+\frac{\partial L}{\partial a_d}&amp;=\phi'(a_d)\odot\frac{\partial L}{\partial h_d}.
+\end{aligned}\]
+The shared parameters accumulate as
+\[\frac{\partial L}{\partial c}=\sum_{d\ge 2}g_d,\qquad
+\frac{\partial L}{\partial W_{:,k}}=x_k\sum_{d&gt;k}g_d,\]
+with \(g_d=\partial L/\partial a_d\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.1(a)</p><p>For a constant Gaussian fit of \(N\) i.i.d. samples, find the critical point in \((\mu,s)\), argue it is the global minimum when the sample variance is positive, and compute \(\mathbb{E}[e^{\hat s}]\) under \(x_n\sim\mathcal{N}(\mu_0,\sigma_0^2)\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.1(a)</p><p>The stationarity condition \(\sum_n(\mu-x_n)e^{-s}=0\) forces \(\mu=\bar x\). Then \(\sum_n\delta^s=0\) forces
+\[e^{\hat s}=\frac1N\sum_n(x_n-\bar x)^2.\]
+If the sample variance is positive, this is the only critical point. It is the global minimum: for any \((\mu,s)\),
+\[\sum_n\ell(x_n;\mu,s)\ge \frac N2\log(2\pi)+\frac N2 s+\frac{S_N}{2e^s},\]
+where \(S_N=\sum(x_n-\bar x)^2\le\sum(x_n-\mu)^2\), and the right-hand side, as a function of \(t=e^s\), is minimized at \(t=S_N/N\). As \(|\mu|\to\infty\) or \(s\to\pm\infty\) the loss tends to infinity whenever \(S_N&gt;0\). If every \(x_n\) equals the same value, then \(s\to-\infty\) with \(\mu\) equal to that value sends the loss to \(-\infty\).</p>
+<p>At the critical point, \(\sum(x_n-\bar x)^2/\sigma_0^2\sim\chi^2_{N-1}\), so \(\mathbb{E}[e^{\hat s}]=\sigma_0^2(N-1)/N\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.2</p><p>Compute the Hessian of \(\ell\) in \((\mu,s)\) and show that it is indefinite whenever \(x\ne\mu\). Conclude that the NLL is not jointly convex (nor jointly concave) in \((\mu,s)\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.2</p><p>\[\nabla^2\ell=\begin{pmatrix}
+e^{-s} &amp; (x-\mu)e^{-s}\\
+(x-\mu)e^{-s} &amp; \frac12(x-\mu)^2 e^{-s}
+\end{pmatrix}.\]
+Its determinant equals \(-\frac12(x-\mu)^2 e^{-2s}\le 0\), and it is strictly negative whenever \(x\ne\mu\). The Hessian is then indefinite. The loss is not jointly convex in \((\mu,s)\), and not jointly concave either.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.2(a)</p><p>Rewrite the Gaussian density in natural parameters \(\eta_1=\mu e^{-s}\), \(\eta_2=-\frac12 e^{-s}\), and show that the NLL is strictly convex in \(\eta\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.2(a)</p><p>Completing the exponential-family representation,
+\[\mathcal{N}(x\mid\mu,e^s)=\frac{1}{\sqrt{2\pi}}\exp(\eta_1 x+\eta_2 x^2-A(\eta)),\]
+\[A(\eta)=-\frac12\log(-2\eta_2)-\frac{\eta_1^2}{4\eta_2}.\]
+Hence \(\ell=\frac12\log(2\pi)-\eta_1 x-\eta_2 x^2+A(\eta)\). The Hessian of \(A\) is positive definite on \(\{\eta_2&lt;0\}\):
+\[\partial_{\eta_1\eta_1}A=\frac{1}{-2\eta_2}&gt;0,\qquad
+\det\nabla^2 A=-\frac{1}{4\eta_2^3}&gt;0.\]
+So \(A\), and therefore \(\ell\), is strictly convex in \(\eta\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.2(b)</p><p>Show separate convexity of \(\ell\) in \(\mu\) and in \(s\). For network parameters, show convexity in the mean weights \((v_d,b_d)\) and in the variance weights \((u_d,e_d)\) separately, and explain why joint convexity in \((v_d,u_d)\) fails.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.2(b)</p><p>For fixed \(s\), \(\partial^2\ell/\partial\mu^2=e^{-s}&gt;0\): strictly convex in \(\mu\). For fixed \(\mu\), \(\partial^2\ell/\partial s^2=\frac12(x-\mu)^2 e^{-s}\ge 0\): convex in \(s\), strictly if \(x\ne\mu\).</p>
+<p>If \((u_d,e_d,h_d)\) are held fixed, \(\mu_d\) is affine in \((v_d,b_d)\). A convex function of an affine map is convex, so the NLL is convex in \((v_d,b_d)\), jointly over \(d\). Likewise, with everything else fixed, \(s_d\) is affine in \((u_d,e_d)\) and the NLL is convex in those variance parameters.</p>
+<p>It is not jointly convex in \((v_d,u_d)\). If \(h_d\ne 0\), the map \((v_d,u_d)\mapsto(\mu_d,s_d)\) is linear and surjective onto \(\mathbb{R}^2\). Joint convexity would imply joint convexity in \((\mu,s)\), which problem 5.2 forbids.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.3</p><p>In one dimension, is the training NLL bounded below for a single training point? For \(N\ge 2\) distinct points? Give the greatest lower bound in the latter case.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.3</p><p><strong>One point.</strong> Set \(\mu=x\) and let \(s\to-\infty\). Then \(\ell=s/2+\frac12\log(2\pi)\to-\infty\). The NLL is not bounded below.</p>
+<p><strong>\(N\ge 2\) distinct points.</strong> Let \(S=\sum_n(x_n-\bar x)^2&gt;0\). The inequality in problem 5.1(a) gives, for every \((\mu,s)\),
+\[\sum_{n=1}^N\ell(x_n;\mu,s)\ge\frac N2\log\Big(2\pi e\frac S N\Big),\]
+with equality at \(\mu=\bar x\) and \(e^s=S/N\). The average NLL is bounded below by \(\frac12\log(2\pi e S/N)\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.3(a)</p><p>For a two-dimensional autoregressive Gaussian conditional model that can interpolate at the training inputs, is the training NLL bounded below? Contrast with a discrete model.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.3(a)</p><p>No, the training NLL is not bounded below. The first coordinates are distinct, and the hidden layer is wide enough to interpolate arbitrary values of \((\mu_2,s_2)\) at those finitely many inputs. Set \(\mu_2(x_{n1})=x_{n2}\) and send \(s_2(x_{n1})\to-\infty\) at each training input, keeping \(s_1\) fixed. Every conditional term \((x_{n2}-\mu_2)^2 e^{-s_2}\) vanishes while \(s_2/2\to-\infty\), so the sum of NLLs tends to \(-\infty\).</p>
+<p>A discrete model cannot do the analogous thing. For any pmf \(q\) and any data distribution \(p_{\mathrm{data}}\),
+\[-\mathbb{E}_{p_{\mathrm{data}}}\log q=H(p_{\mathrm{data}})+\mathrm{KL}(p_{\mathrm{data}}\| q)\ge H(p_{\mathrm{data}}).\]
+The average NLL cannot undercut the entropy of the data distribution. Continuous training data are a sum of atoms; a density value at a point can be arbitrarily large, so there is no entropy floor under the empirical measure.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.3(b)</p><p>Impose a variance floor \(s_d\ge s_{\min}\). Show that the training NLL becomes bounded below, and identify what changed relative to problem 5.3(a).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.3(b)</p><p>With \(s_d\ge s_{\min}\) for every conditional,
+\[\ell(x_d;\mu_d,s_d)\ge\frac12\log(2\pi)+\frac{s_d}2\ge\frac12\big(\log(2\pi)+s_{\min}\big),\]
+because the squared residual is nonnegative and \(s/2\) is increasing. Summing over the \(D\) coordinates,
+\[-\log p_\theta(x)\ge\frac D2\big(\log(2\pi)+s_{\min}\big)\]
+for every \(x\) and every parameter obeying the floor. The training NLL of problem 5.3(a) is therefore bounded below, by \(N\) times this constant. The floor is what creates the bound: without it, \(s_2\to-\infty\) was available at the training inputs.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.4(a)</p><p>For a mixture of \(C\) univariate Gaussians with mixture logits \(\ell_c\), means \(\mu_c\), and log-variances \(s_c\), derive \(\partial L/\partial\ell_c\), \(\partial L/\partial\mu_c\), \(\partial L/\partial s_c\), and \(\partial L/\partial h\) when each natural parameter is linear in a shared hidden state \(h\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.4(a)</p><p>Let \(\varphi_c=\mathcal{N}(x\mid\mu_c,e^{s_c})\) and \(Z=\sum_j\pi_j\varphi_j\), so \(L=-\log Z\) and \(\gamma_c=\pi_c\varphi_c/Z\). Softmax Jacobian: \(\partial\pi_j/\partial\ell_c=\pi_j(\mathbf 1_{j=c}-\pi_c)\). Hence
+\[\frac{\partial Z}{\partial\ell_c}=\pi_c\varphi_c-\pi_c Z,\qquad
+\frac{\partial L}{\partial\ell_c}=\pi_c-\gamma_c.\]
+Summing over components, \(\sum_c\partial L/\partial\ell_c=0\). Differentiating through one component,
+\[\frac{\partial L}{\partial\mu_c}=\gamma_c \delta^\mu_c,\qquad
+\frac{\partial L}{\partial s_c}=\gamma_c \delta^s_c.\]
+Compared with problem 5.1, each Gaussian gradient is multiplied by the responsibility of that component. Since \(\ell_c=a_c^\top h+\alpha_c\), \(\mu_c=v_c^\top h+b_c\), and \(s_c=u_c^\top h+e_c\),
+\[\frac{\partial L}{\partial h}
+=\sum_{c=1}^C\Big((\pi_c-\gamma_c)a_c+\gamma_c\delta^\mu_c v_c+\gamma_c\delta^s_c u_c\Big).\]</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.4(b)</p><p>For \(C\ge 2\) and \(N\ge 2\) distinct points, is the mixture likelihood bounded above? Contrast with \(C=1\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.4(b)</p><p>No upper bound, once \(C\ge 2\) and the \(N\ge 2\) points are distinct. Put \(\mu_1=x_1\), send \(s_1\to-\infty\), and keep \(\pi_1=\pi_2=1/2\), \(\mu_2\) arbitrary, and \(s_2\) fixed. The factor at \(x_1\) tends to infinity because \(\varphi_1(x_1)\to\infty\). At every \(x_n\ne x_1\), \(\varphi_1(x_n)\to 0\), but \(\pi_2\varphi_2(x_n)\) stays equal to a positive constant. The product of the \(N\) mixture densities tends to infinity. For \(C=1\) this escape is impossible, by problem 5.3.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 5.4(c)</p><p>Show that the mixture NLL is not convex, and identify the label-switching symmetry of order \(C!\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 5.4(c)</p><p>Take \(C=2\), one observation \(x=0\), \(\pi=(1/2,1/2)\), \(s_1=s_2=0\), and free means. Up to an additive constant,
+\[L(\mu_1,\mu_2)=-\log\big(e^{-\mu_1^2/2}+e^{-\mu_2^2/2}\big).\]
+At the endpoints \((0,3)\) and \((3,0)\), \(L=-\log(1+e^{-4.5})\approx -0.0111\). At the midpoint \((1.5,1.5)\), \(L=-\log(2e^{-1.125})=-\log 2+1.125\approx 0.4319\), which is larger than the average of the endpoint values. The function lies above the chord, so it is not convex.</p>
+<p>Swapping the two components' means leaves \((\pi,s)\) unchanged in this example and does not change the mixture. A generic pair with \(\mu_1\ne\mu_2\) therefore has \(2=2!\) parameter vectors, related by relabeling, that define the same distribution. For a mixture with \(C\) labeled components the same relabeling symmetry has order \(C!\).</p></aside>
 </section>

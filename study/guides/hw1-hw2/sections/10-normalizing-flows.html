@@ -80,4 +80,147 @@ With the parameterization \(W=PL\left(U+\operatorname{diag}(s)\right)\) of the p
 The cost of the log-determinant is linear in the number of channels, not cubic, and it does not grow with a matrix factorization at every pixel.</p></aside>
 <aside class="box practice"><p class="box-title">Practice: One pixel, two channels</p><p>Let \(H=W=1\) and \(W=\operatorname{diag}(2,1/2)\). Compute \(\log|\det J|\) two ways: from \(HW\log|\det W|\), and from the sum of \(\log| s_i|\).</p></aside>
 <aside class="box solution"><p class="box-title">Worked solution</p><p>\(\det W=1\), so \(\log|\det J|=0\). And \(\log| 2|+\log| 1/2|=\log 2+\log(1/2)=0\). The volume of the two channels is unchanged: one axis stretches by \(2\), the other shrinks by \(2\).</p></aside>
+<h3>Homework 2 problems</h3>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 2, problem 3.1</p><p>Consider a VAE with flow prior \(u\sim p_0=\mathcal{N}(0,I_d)\), \(z=f_\psi(u)\), and decoder \(x\sim p_\theta(x\mid z)\). Assume \(f_\psi\) and \(f_\psi^{-1}\) are \(C^1\) with nonsingular Jacobians. Using change of variables, derive the ELBO and show that
+\[\mathcal L_{\theta,\psi}(x)
+=\mathbb{E}_{q_\phi(z\mid x)}[\log p_\theta(x\mid z)]
+-\mathrm{KL}\left(q_\phi(z\mid x)\| p_\psi(z)\right),\]
+where
+\[\begin{aligned}
+\mathrm{KL}\left(q_\phi(z\mid x)\| p_\psi(z)\right)
+&amp;=\mathbb{E}_{q_\phi(z\mid x)}\left[
+\log q_\phi(z\mid x)
+-\log p_0\left(f_\psi^{-1}(z)\right)\\
+&amp;\qquad+\log|\det J_{f_\psi}\left(f_\psi^{-1}(z)\right)|
+\right].
+\end{aligned}\]</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 2, problem 3.1</p><p>The ordinary VAE identity reconstruction minus KL still holds with prior \(p_\psi\). Change of variables  gives
+\[\log p_\psi(z)
+=\log p_0\left(f_\psi^{-1}(z)\right)
+-\log|\det J_{f_\psi}\left(f_\psi^{-1}(z)\right)|.\]
+Therefore
+\[\begin{aligned}
+\mathrm{KL}(q_\phi\| p_\psi)
+&amp;=\mathbb{E}_{q_\phi}\left[\log q_\phi(z\mid x)-\log p_\psi(z)\right]\\
+&amp;=\mathbb{E}_{q_\phi}\left[
+\log q_\phi(z\mid x)
+-\log p_0(f_\psi^{-1}(z))
++\log|\det J_{f_\psi}(f_\psi^{-1}(z))|
+\right],
+\end{aligned}\]
+and
+\[\mathcal L_{\theta,\psi}(x)
+=\mathbb{E}_{q_\phi}[\log p_\theta(x\mid z)]-\mathrm{KL}(q_\phi\| p_\psi).\]</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 2, problem 3.2</p><p>Define a model with standard Gaussian prior \(p_0(u)\) and decoder
+\(\tilde p_{\theta,\psi}(x\mid u)=p_\theta(x\mid f_\psi(u))\). Prove that
+\[p_{\theta,\psi}(x)=\int p_\theta(x\mid f_\psi(u)) p_0(u) du.\]
+For \(z\sim q_\phi(z\mid x)\) set \(u=f_\psi^{-1}(z)\). Derive
+\[r_{\phi,\psi}(u\mid x)=q_\phi\left(f_\psi(u)\mid x\right) |\det J_{f_\psi}(u)|,\]
+and prove \(\mathrm{KL}(q_\phi\| p_\psi)=\mathrm{KL}(r_{\phi,\psi}\| p_0)\). Hence show the two ELBOs agree when the variational densities are related by this map.</p>
+<p>Now restrict both variational families to diagonal Gaussians. Take
+\(f(u_1,u_2)=(u_1,u_2+u_1^2)\) and \(q(z\mid x)=\mathcal{N}(0,I_2)\). Find the induced density \(r(u\mid x)\) and prove it is not diagonal Gaussian. Explain why ELBO optimization can break the equivalence under this restriction even though the generative models agree.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 2, problem 3.2</p><p>Change variables \(z=f_\psi(u)\) in the marginal: \(dz=|\det J_{f_\psi}(u)| du\) and
+\(p_\psi(z) dz=p_0(u) du\), so
+\[p_{\theta,\psi}(x)
+=\int p_\theta(x\mid z) p_\psi(z) dz
+=\int p_\theta(x\mid f_\psi(u)) p_0(u) du.\]
+If \(z\sim q_\phi(z\mid x)\) and \(u=f_\psi^{-1}(z)\), the change-of-variables formula for the pushforward of \(q_\phi\) under \(f_\psi^{-1}\) is
+\[r_{\phi,\psi}(u\mid x)
+=q_\phi\left(f_\psi(u)\mid x\right) |\det J_{f_\psi}(u)|.\]
+Then
+\[\begin{aligned}
+\mathrm{KL}(q_\phi\| p_\psi)
+&amp;=\mathbb{E}_{q_\phi}\left[\log q_\phi-\log p_\psi\right]
+=\mathbb{E}_{r}\left[\log r-\log p_0\right]
+=\mathrm{KL}(r\| p_0),
+\end{aligned}\]
+because the Jacobian factors in \(\log q_\phi(f(u))\) and \(\log p_\psi(f(u))\) cancel against those in \(\log r\) and \(\log p_0\). Reconstruction expectations also match under \(z=f(u)\), so the ELBOs agree whenever the variational densities are exact images of each other.</p>
+<p>For the counter-example, \(\det J_f=1\) (Chapter Matrix calculus and Jacobians), and
+\[r(u\mid x)\propto\exp\left(-\frac12 u_1^2-\frac12(u_2+u_1^2)^2\right).\]
+The coordinates are dependent, so \(r\) is not a product of univariate Gaussians. No diagonal-Gaussian encoder in \(u\)-space represents \(r\). Optimizing over diagonal Gaussians in \(z\) and in \(u\) are therefore different problems, even though the generative models are the same.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 2, problem 4.1</p><p>Let \(h=(h_A,h_B)\in\mathbb{R}^D\) with dimensions \(d_A+d_B=D\). Consider the affine coupling
+\[\begin{aligned}
+y_A&amp;=h_A,\\
+y_B&amp;=h_B\odot\exp\left(s_\theta(h_A)\right)+t_\theta(h_A).
+\end{aligned}\]
+Let \(h\sim p_0\) and \(y=f_\theta(h)\). Prove that \(f_\theta\) is invertible and that
+\[\log p_\theta(y)
+=\log p_0\left(f_\theta^{-1}(y)\right)
+-\sum_{j=1}^{d_B}s_{\theta,j}(y_A).\]
+Give the inverse. Explain why the determinant stays tractable when \(s_\theta\) and \(t_\theta\) are neural networks.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 2, problem 4.1</p><p>The inverse is
+\[\begin{aligned}
+h_A&amp;=y_A,\\
+h_B&amp;=\left(y_B-t_\theta(y_A)\right)\odot\exp\left(-s_\theta(y_A)\right).
+\end{aligned}\]
+Ordering coordinates as \((A,B)\), the Jacobian is block triangular,
+\[J=\begin{pmatrix}I&amp;0\\ \ast&amp;\operatorname{diag}\left(e^{s_\theta(h_A)}\right)\end{pmatrix},\]
+so \(\log|\det J|=\sum_{j=1}^{d_B}s_{\theta,j}(h_A)=\sum_{j=1}^{d_B}s_{\theta,j}(y_A)\). Change of variables  then yields the claimed density formula. The networks \(s_\theta\) and \(t_\theta\) enter the map, but only the scale outputs appear in \(\det J\); their internal Jacobians never appear. That is why large networks are allowed.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 2, problem 4.2</p><p>A flow defines a density \(p_\theta(y)\) on \(\mathbb{R}^D\). For a discrete observation \(x\in\mathbb{Z}^D\) define the bin \(B_x=x+[0,1)^D\). Let \(y\sim p_\theta\) and \(x=\lfloor y\rfloor\). Prove that
+\[P_\theta(x)=\int_{[0,1)^D}p_\theta(x+u) du,\]
+that \(P_\theta(x)\ge 0\) and \(\sum_{x\in\mathbb{Z}^D}P_\theta(x)=1\), and explain the distinction between the density value \(p_\theta(x)\) and the mass \(P_\theta(x)\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 2, problem 4.2</p><p>The event \(\{\lfloor y\rfloor=x\}\) is exactly \(y\in B_x=x+[0,1)^D\), so
+\[P_\theta(x)=\int_{B_x}p_\theta(y) dy=\int_{[0,1)^D}p_\theta(x+u) du.\]
+Nonnegativity follows from \(p_\theta\ge 0\). The bins partition \(\mathbb{R}^D\) up to boundaries of measure zero, hence
+\[\sum_{x\in\mathbb{Z}^D}P_\theta(x)=\int_{\mathbb{R}^D}p_\theta(y) dy=1.\]
+Thus \(P_\theta\) is a pmf on \(\mathbb{Z}^D\). The number \(p_\theta(x)\) is a density evaluated at a corner of the bin; it is not equal to the integral \(P_\theta(x)\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 2, problem 4.3</p><p>Introduce a dequantizer \(q_\phi(u\mid x)\) supported on \([0,1)^D\), strictly positive a.e. in the bin, with finite expectations. Using importance sampling and Jensen, prove
+\[\log P_\theta(x)
+\ge
+\mathbb{E}_{q_\phi(u\mid x)}\left[\log\frac{p_\theta(x+u)}{q_\phi(u\mid x)}\right]
+=:\mathcal L_{\mathrm{DQ}}(\theta,\phi;x).\]
+With differential entropy \(H(q_\phi(\cdot\mid x))=-\mathbb{E}_{q_\phi}[\log q_\phi(u\mid x)]\), prove
+\[\mathcal L_{\mathrm{DQ}}(\theta,\phi;x)
+=\mathbb{E}_{q_\phi}[\log p_\theta(x+u)]+H\left(q_\phi(\cdot\mid x)\right),\]
+and identify the roles of the two terms.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 2, problem 4.3</p><p>Importance sampling writes
+\[P_\theta(x)
+=\mathbb{E}_{q_\phi(u\mid x)}\left[\frac{p_\theta(x+u)}{q_\phi(u\mid x)}\right].\]
+Apply \(\log\) and Jensen to obtain , i.e. \(\log P_\theta(x)\ge\mathcal L_{\mathrm{DQ}}\). Expanding the logarithm separates
+\[\mathcal L_{\mathrm{DQ}}
+=\mathbb{E}_{q_\phi}[\log p_\theta(x+u)]+H\left(q_\phi(\cdot\mid x)\right).\]
+The likelihood term pushes mass \(x+u\) toward high flow density. The entropy prevents \(q_\phi\) from collapsing to a Dirac mass, which would discard the integral over the bin.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 2, problem 4.4</p><p>Define \(r_\theta(u\mid x)=p_\theta(x+u)/P_\theta(x)\) on \([0,1)^D\). Starting from KL, prove
+\[\log P_\theta(x)-\mathcal L_{\mathrm{DQ}}(\theta,\phi;x)
+=\mathrm{KL}\left(q_\phi(u\mid x)\| r_\theta(u\mid x)\right),\]
+and identify the \(q_\phi\) that makes the bound tight.</p>
+<p>For uniform dequantization \(q_U\equiv 1\) on the bin, show that the objective reduces to
+\(\mathcal L_U(\theta;x)=\int_{[0,1)^D}\log p_\theta(x+u) du\), and that the bound is tight if and only if \(p_\theta(x+u)\) is constant a.e. on the bin.</p>
+<p>If instead \(u=g_\phi(\varepsilon;x)\) with \(\varepsilon\sim p_0\) and \(g_\phi(\cdot;x)\) a bijection onto \((0,1)^D\), show that
+\[\begin{aligned}
+\mathcal L_{\mathrm{DQ}}(\theta,\phi;x)
+&amp;=\mathbb{E}_{\varepsilon\sim p_0}\left[
+\log p_\theta\left(x+g_\phi(\varepsilon;x)\right)
++\log|\det J_{g_\phi}(\varepsilon;x)|
+-\log p_0(\varepsilon)
+\right],
+\end{aligned}\]
+and explain why a learned flow dequantizer can beat the uniform bound.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 2, problem 4.4</p><p>Expand
+\[\begin{aligned}
+\mathrm{KL}(q_\phi\| r_\theta)
+&amp;=\mathbb{E}_{q_\phi}\left[\log q_\phi-\log p_\theta(x+u)+\log P_\theta(x)\right]\\
+&amp;=\log P_\theta(x)-\mathcal L_{\mathrm{DQ}},
+\end{aligned}\]
+as in . The gap vanishes if and only if \(q_\phi=r_\theta(\cdot\mid x)\).</p>
+<p>Under \(q_U=1\) on the bin one has \(H(q_U)=0\), so
+\(\mathcal L_U=\int_{[0,1)^D}\log p_\theta(x+u) du\). Tightness requires \(q_U=r_\theta\), i.e. \(p_\theta(x+u)\) constant a.e. on the bin.</p>
+<p>For a conditional flow dequantizer, change of variables substitutes
+\(\log q_\phi(u\mid x)=\log p_0(\varepsilon)-\log|\det J_g(\varepsilon;x)|\) with \(u=g_\phi(\varepsilon;x)\) into , producing the displayed expectation. A learned \(g_\phi\) can approximate a non-uniform \(r_\theta\), so the KL gap can be smaller than under uniform \(q_U\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 2, problem 5.1</p><p>Let \(X\in\mathbb{R}^{C\times H\times W}\) and \(Y_{:,i,j}=W X_{:,i,j}\) with the same \(W\in\mathbb{R}^{C\times C}\) at every spatial site.
+&lt;ol&gt;&lt;li&gt;&lt;p&gt;Prove the map is invertible if and only if \(\det W\neq 0\), with inverse \(X_{:,i,j}=W^{-1}Y_{:,i,j}\).&lt;/p&gt;&lt;/li&gt;&lt;li&gt;&lt;p&gt;Derive the full Jacobian \(J\) and prove \(\log|\det J|=HW\log|\det W|\).&lt;/p&gt;&lt;/li&gt;&lt;/ol&gt;</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 2, problem 5.1</p><p>(a) At each site the map is left-multiplication by \(W\). It is bijective on \(\mathbb{R}^C\) if and only if \(W\) is invertible, i.e. \(\det W\neq 0\), and the inverse applies \(W^{-1}\) at every \((i,j)\). The global map is therefore invertible exactly under that condition.</p>
+<p>(b) Vectorize so that the \(C\) channels of each pixel stay together. The map acts independently on each of the \(HW\) spatial sites, so \(J\) is block diagonal with \(HW\) copies of \(W\). Hence
+\[\det J=(\det W)^{HW},\qquad
+\log|\det J|=HW\log|\det W|.\]</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 2, problem 5.2</p><p>Glow parameterizes \(W=PL\left(U+\operatorname{diag}(s)\right)\) with \(P\) a fixed permutation, \(L\) unit lower triangular, \(U\) strictly upper triangular, and \(s\in\mathbb{R}^C\) with nonzero entries. Prove
+\[\log|\det W|=\sum_{i=1}^{C}\log| s_i|,\]
+and hence
+\[\log|\det J|=HW\sum_{i=1}^{C}\log| s_i|.\]</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 2, problem 5.2</p><p>Use the triangular determinant lemma from Chapter Matrix calculus and Jacobians: \(\det L=1\), \(\det P=\pm 1\), and
+\(\det(U+\operatorname{diag}(s))=\prod_i s_i\). Multiplicativity of the determinant yields
+\[\log|\det W|=\sum_{i=1}^{C}\log| s_i|.\]
+Combined with part 5.1,
+\[\log|\det J|=HW\sum_{i=1}^{C}\log| s_i|.\]
+The log-determinant is linear in the number of channels and needs no cubic factorization per pixel.</p></aside>
 </section>

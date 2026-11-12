@@ -5,11 +5,77 @@
 \[\hat f_N=\frac1N\sum_{n=1}^N f(x^{(n)}).\]
 It is unbiased. If \(\mathrm{Var}_p(f)=\sigma_f^2&lt;\infty\), then \(\mathrm{Var}(\hat f_N)=\sigma_f^2/N\).</p></aside>
 <aside class="box intuition"><p class="box-title">Intuition</p><p>Unbiased means the average of the estimator, over datasets of samples, equals the integral. It does not mean one sample is exact. The error typically shrinks like \(1/\sqrt{N}\), because the standard deviation is \(\sigma_f/\sqrt{N}\). Lecture 2, slides 34–35, and Homework 1, problem 2, turn that variance into a sample size through Chebyshev or a Chernoff bound. Chebyshev uses only the variance. A Chernoff bound uses the moment generating function and can demand fewer samples while remaining a guarantee.</p></aside>
+<aside class="box result"><p class="box-title">Result: Chebyshev sample size</p><p>If \(\sigma_f^2&lt;\infty\), then for every \(\varepsilon&gt;0\),
+\[\mathbb P\left(|\hat f_N-\mathbb{E}_p f|\ge\varepsilon\right)\le\frac{\sigma_f^2}{N\varepsilon^2}.\]
+The right-hand side tends to \(0\) (weak law). The sample size needed for deviation \(\varepsilon\) and failure probability \(\delta\) is \(N\ge\sigma_f^2/(\delta\varepsilon^2)\). Root-mean-square error is \(O(N^{-1/2})\).</p></aside>
+<p>A Chernoff bound replaces the variance by the moment generating function. For a \(\chi^2_N\) law the mgf is \((1-2\lambda)^{-N/2}\) for \(\lambda&lt;1/2\), and optimizing Markov's inequality on each tail produces explicit rate functions \(I_\pm(t)\). The resulting \(N\) is still a finite-sample guarantee, typically tighter than Chebyshev and looser than a CLT quantile (which is only asymptotic).</p>
 <h3>Importance sampling</h3>
 <p>When draws from \(p\) are unavailable, draw \(x\sim q\) instead and correct the weight:
 \[\mathbb{E}_p[f]=\mathbb{E}_q\left[f(x)\frac{p(x)}{q(x)}\right],\]
 provided \(q\) is positive wherever \(p f\) is nonzero. The weight \(p/q\) is the importance weight. The estimator is unbiased for any such \(q\). Its variance is small when \(q\) is large where \(| f| p\) is large, and it is huge when \(q\) is tiny on that set.</p>
+<aside class="box result"><p class="box-title">Result: Second-moment criterion</p><p>The one-sample variance \(\mathrm{Var}_q(fp/q)\) is finite if and only if \(\mathbb{E}_q[(fp/q)^2]&lt;\infty\). Among nonnegative integrands, the zero-variance proposal is \(q^\star(x)\propto f(x)p(x)\), which requires the unknown integral as a normalizer and is therefore not a practical proposal.</p></aside>
+<p>For the scalar example \(f(x)=x^2\), \(p=\mathcal{N}(0,1)\), and Gaussian proposals \(q=\mathcal{N}(0,s^2)\), the estimator is unbiased for every \(s&gt;0\), the second moment is finite if and only if \(s&gt;1/\sqrt 2\), and the variance-minimizing scale among Gaussians is \(s=\sqrt 3\).</p>
 <aside class="box watch"><p class="box-title">Watch out</p><p>Lecture 4, slides 23–29, shows a proposal that misses the posterior mass. The likelihood estimator then has rare enormous weights. The ELBO replaces that high-variance estimator by a bound whose gap is exactly a KL. You give up unbiasedness of the likelihood and gain a gradient you can train.</p></aside>
 <h3>Perplexity</h3>
-<p>For a discrete model, perplexity is \(\exp\left(-\mathbb{E}_{x\sim p_{\mathrm{data}}}\log p_\theta(x)\right)\), or the same expression with the average over a finite test set. It is an exponential of a cross-entropy. Jensen applied to the exponential, or a bias expansion of the logarithm of an average, shows that a naive plug-in can be biased. Homework 1 asks for that expansion. The point to remember is that the log of an average is not the average of the logs.</p>
+<p>For a discrete model, perplexity is \(\exp\left(-\mathbb{E}_{x\sim p_{\mathrm{data}}}\log p_\theta(x)\right)\), or the same expression with the average over a finite test set. It is an exponential of a cross-entropy. Write \(\ell(x)=-\log p_\theta(x)\), \(\mathrm{PPL}=\exp(\mathbb{E}[\ell])\), and \(\widehat{\mathrm{PPL}}_N=\exp(\bar\ell_N)\) with \(\bar\ell_N=N^{-1}\sum_n\ell(x_n)\).</p>
+<aside class="box result"><p class="box-title">Result: Bias and consistency of plug-in perplexity</p><p>Jensen for the convex map \(\exp\) gives \(\mathbb{E}[\widehat{\mathrm{PPL}}_N]\ge\mathrm{PPL}\) for every finite \(N\), with equality if and only if \(\ell\) is \(p_{\mathrm{data}}\)-a.s. constant. If \(\mathbb{E}|\ell|&lt;\infty\), the weak law and continuity of \(\exp\) give consistency in probability. Under a third-moment assumption the bias admits the expansion
+\[\mathbb{E}[\widehat{\mathrm{PPL}}_N]=\mathrm{PPL}\left(1+\frac{\mathrm{Var}(\ell)}{2N}+o(N^{-1})\right).\]</p></aside>
+When data are Gaussian and the model is \(\mathcal{N}(0,\sigma^2)\) with variance ratio \(r=\mathrm{Var}_{\mathrm{data}}/\sigma^2\), the plug-in has a closed form involving the chi-squared mgf, finite if and only if \(N&gt;r\), and the asymptotic coefficient matches \(\mathrm{Var}(\ell)/2=r^2/4\).
+<p>Homework 1 asks for that expansion. The point to remember is that the log of an average is not the average of the logs—here the exponential of an average is biased upward.</p>
+<h3>Homework 1 problems</h3>
+<p>The KL and Jensen–Shannon parts of Homework 1 problem 2 live in Chapter Divergences. The Monte Carlo, importance sampling, and perplexity parts are collected here.</p>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.1</p><p>Show that the Monte Carlo average \(f_N=N^{-1}\sum_{n\le N}f(x_n)\) is unbiased when \(\mathbb{E}_p|f|&lt;\infty\), compute its variance when \(\mathrm{Var}_p(f)=\sigma_f^2&lt;\infty\), and deduce Chebyshev's bound and the weak law.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.1</p><p>If \(\mathbb{E}_p|f|&lt;\infty\), then \(\mathbb{E}[f_N]=\mathbb{E}_p[f]\), so \(f_N\) is unbiased. If \(\mathrm{Var}_p(f)=\sigma_f^2&lt;\infty\), independence gives \(\mathrm{Var}(f_N)=\sigma_f^2/N\).</p>
+<p>Chebyshev: for every \(\varepsilon&gt;0\),
+\[\mathbb P\big(|f_N-\mathbb{E}_p f|\ge\varepsilon\big)\le\frac{\sigma_f^2}{N\varepsilon^2}.\]
+The right-hand side tends to \(0\), which is the weak law, with rate \(O(1/N)\) in probability deviation and \(O(N^{-1/2})\) in root-mean-square error. The sample size needed for deviation \(\varepsilon\) and probability \(\delta\) is \(N\ge\sigma_f^2/(\delta\varepsilon^2)\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.1(a)</p><p>Let \(X\sim\mathcal{N}(1,4)\) and \(f(X)=(X-1)^2\). Bound or approximate the \(N\) needed so that \(\mathbb P(|f_N-4|\ge 1/2)\le 0.05\) by (i) Chebyshev, (ii) CLT, and (iii) Chernoff on the underlying chi-squared. Round Chernoff to the nearest \(50\), and compare the three answers.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.1(a)</p><p>Let \(Z=(X-1)/2\sim\mathcal{N}(0,1)\). Then \(f(X)=4Z^2\), so \(\mathbb{E}[f]=4\) and \(\mathrm{Var}(f)=16\mathrm{Var}(Z^2)=16(3-1)=32\).</p>
+<p>Each \((X_n-1)^2/4\sim\chi^2_1\), hence \(f_N=(4/N)\chi^2_N\). The event \(|f_N-4|\ge 1/2\) is \(|\chi^2_N-N|\ge N/8\), i.e. a relative deviation \(t=1/8\).</p>
+<p>(i) Chebyshev. \(\mathrm{Var}(f_N)=32/N\), so the probability is at most \(32/(N\cdot 1/4)=128/N\). The bound is at most \(0.05\) once \(N\ge 128/0.05=2560\). This \(N\) is guaranteed.</p>
+<p>(ii) CLT. Use \(\sqrt{32/N}\) as the standard deviation and the normal quantile \(1.96\):
+\[\frac{1/2}{\sqrt{32/N}}\ge 1.96
+\iff N\ge 32\cdot(3.92)^2=491.72\ldots\]
+So \(N\ge 492\). This is an approximation, not a finite-sample guarantee.</p>
+<p>(iii) Chernoff. The mgf of \(\chi^2_N\) is \((1-2\lambda)^{-N/2}\) for \(\lambda&lt;1/2\). Optimizing the Markov bound on each tail produces, for \(t\in(0,1)\),
+\[\begin{aligned}
+\mathbb P(\chi^2_N\ge N(1+t))&amp;\le\big((1+t)e^{-t}\big)^{N/2}=e^{-NI_+(t)},\\
+\mathbb P(\chi^2_N\le N(1-t))&amp;\le\big((1-t)e^{t}\big)^{N/2}=e^{-NI_-(t)},
+\end{aligned}\]
+with \(I_+(t)=\frac12(t-\log(1+t))\) and \(I_-(t)=\frac12(-\log(1-t)-t)\). At \(t=1/8\), \(I_+\approx 0.0036085\) and \(I_-\approx 0.0042657\). The sum of the two tails drops to \(0.05\) or below at \(N=950\). Nearest \(50\) is \(950\). This \(N\) is guaranteed.</p>
+<p>Chebyshev and Chernoff are theorems about this finite \(N\); the CLT is only an asymptotic shape. Chebyshev is loose (\(2560\)). Chernoff is tighter (\(950\)) but still a bound. The CLT suggests about \(492\) and is the most optimistic precisely because it is not guaranteed.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.1(b)</p><p>Importance-sample \(\mathbb{E}_p[x^2]=1\) for \(p=\mathcal{N}(0,1)\) with proposals \(q=\mathcal{N}(0,s^2)\). Show unbiasedness for every \(s&gt;0\), find when the variance is finite, minimize that variance over \(s\), and identify the zero-variance proposal over all densities.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.1(b)</p><p>\[\mathbb{E}_q\Big[f(x)\frac{p(x)}{q(x)}\Big]=\int x^2 p(x) dx=1\]
+whenever \(s&gt;0\), because \(q&gt;0\) everywhere and \(x^2p\) is integrable. So \(\hat I_N\) is unbiased for every \(s&gt;0\), and \(\mathrm{Var}(\hat I_N)=N^{-1}\mathrm{Var}_q(fp/q)\).</p>
+<p>The second moment is finite if and only if \(s&gt;1/\sqrt 2\). Indeed
+\[\frac{p(x)^2}{q(x)}=s(2\pi)^{-1/2}\exp\big(-x^2(1-\frac1{2s^2})\big),\]
+and \(\int x^4 p^2/q\) converges precisely when the quadratic rate \(1-1/(2s^2)\) is positive. Evaluating the Gaussian moment gives
+\[\mathbb{E}_q\Big[\Big(x^2\frac pq\Big)^2\Big]=\frac{3s^6}{(2s^2-1)^{5/2}},\qquad
+\mathrm{Var}_q\Big(x^2\frac pq\Big)=\frac{3s^6}{(2s^2-1)^{5/2}}-1.\]
+Minimize \(v(u)=3u^3/(2u-1)^{5/2}\) for \(u=s^2&gt;1/2\). The logarithmic derivative \(3/u-5/(2u-1)\) vanishes at \(u=3\), and \(v\to\infty\) at both endpoints, so the best Gaussian scale is \(s=\sqrt 3\), with minimal one-sample variance \((81\sqrt 5-125)/125\approx 0.44897\). Ordinary Monte Carlo (\(s=1\)) has variance \(2\).</p>
+<p>Over all proposals, \(f\ge 0\), so the zero-variance proposal is \(q^\star(x)\propto f(x)p(x)=x^2 p(x)\). It is already normalized because \(\mathbb{E}_p[x^2]=1\):
+\[q^\star(x)=x^2\cdot(2\pi)^{-1/2}e^{-x^2/2}.\]
+Then \(fp/q^\star=1\) for \(x\ne 0\), so the importance-sampling estimator has variance \(0\). Using it requires the unknown integral as a normalizing constant.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.2</p><p>Define \(\widehat{\mathrm{PPL}}_N=\exp(\bar\ell_N)\) with \(\bar\ell_N=N^{-1}\sum_{n\le N}\ell(x_n)\) and \(\mathrm{PPL}=\exp(\mathbb{E}[\ell])\). Show that the estimator is biased upward for every finite \(N\), characterize equality, and prove consistency when \(\mathbb{E}|\ell|&lt;\infty\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.2</p><p>Jensen's inequality for the convex map \(\exp\) gives
+\[\mathbb{E}[\widehat{\mathrm{PPL}}_N]\ge\exp(\mathbb{E}[\bar\ell_N])=\exp(\mathbb{E}[\ell])=\mathrm{PPL},\]
+for every finite \(N\). Equality holds if and only if \(\bar\ell_N\) is almost surely constant, i.e. \(\ell(x)\) is \(p_{\mathrm{data}}\)-a.s. constant. In particular \(\widehat{\mathrm{PPL}}_N\) is not unbiased unless \(\ell\) is a.s. constant.</p>
+<p>If \(\mathbb{E}|\ell|&lt;\infty\), the weak law gives \(\bar\ell_N\to\mathbb{E}[\ell]\) in probability, and continuity of \(\exp\) gives \(\widehat{\mathrm{PPL}}_N\to\mathrm{PPL}\) in probability. The estimator is consistent. The strong law upgrades this to almost-sure convergence.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.2(a)</p><p>Assuming \(\mathbb{E}|\ell|^3&lt;\infty\), expand \(\mathbb{E}[\widehat{\mathrm{PPL}}_N]/\mathrm{PPL}\) through order \(1/N\) and identify the coefficient \(c=\mathrm{Var}(\ell)/2\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.2(a)</p><p>Write \(\delta_N=\bar\ell_N-\mathbb{E}[\ell]\), so \(\mathbb{E}\delta_N=0\), \(\mathbb{E}\delta_N^2=\mathrm{Var}(\ell)/N\), and \(\mathbb{E}\delta_N^3=O(1/N^2)\). Then
+\[\mathbb{E}[e^{\delta_N}]=1+\frac12\mathbb{E}[\delta_N^2]+O(1/N^2)=1+\frac{\mathrm{Var}(\ell)}{2N}+o(N^{-1}).\]
+Hence \(c=\mathrm{Var}(\ell)/2\).</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.2(b)</p><p>For Gaussian data of variance \(s^2\) and model \(\mathcal{N}(0,\sigma^2)\) with \(r=s^2/\sigma^2\), derive the closed form of \(\mathbb{E}[\widehat{\mathrm{PPL}}_N]\), the condition \(N&gt;r\) for finiteness, the asymptotic coefficient \(c=r^2/4\), and the interpretation when \(r&gt;1\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.2(b)</p><p>\[\ell(x)=\frac12\log(2\pi\sigma^2)+\frac{x^2}{2\sigma^2},\qquad
+\mathbb{E}[\ell]=\frac12\log(2\pi\sigma^2)+\frac r2,\]
+so \(\mathrm{PPL}=\sqrt{2\pi\sigma^2} e^{r/2}\). With \(\sum_n x_n^2=s^2\chi^2_N\),
+\[\widehat{\mathrm{PPL}}_N=\sqrt{2\pi\sigma^2} \exp\big(\frac{r}{2N}\chi^2_N\big).\]
+The chi-squared mgf at \(\lambda=r/(2N)\) exists if and only if \(r/N&lt;1\), i.e. \(N&gt;r\), and then
+\[\mathbb{E}[\widehat{\mathrm{PPL}}_N]=\sqrt{2\pi\sigma^2} (1-r/N)^{-N/2}
+=\mathrm{PPL}\cdot e^{-r/2}(1-r/N)^{-N/2}.\]
+For \(N\le r\) the expectation is infinite.</p>
+<p>Expand \(\log(1-r/N)=-r/N-r^2/(2N^2)+O(N^{-3})\):
+\[(1-r/N)^{-N/2}=e^{r/2}\big(1+\frac{r^2}{4N}+O(N^{-2})\big).\]
+So \(c=r^2/4\). Independently, \(\mathrm{Var}(x^2)=2s^4\) and \(\mathrm{Var}(\ell)=r^2/2\), hence \(\mathrm{Var}(\ell)/2=r^2/4\), matching problem 2.2(a).</p>
+<p>If \(r&gt;1\), the model variance is smaller than the data variance. Then \(\mathbb{E}[\widehat{\mathrm{PPL}}_N]=\infty\) for every \(N\le r\): rare large data points make \(-\log p_\theta(x)\) so heavy-tailed that the exponential moment does not exist. Consistency is only visible once \(N&gt;r\).</p></aside>
 </section>

@@ -40,6 +40,8 @@ BOXES = {
     "practbox": ("practice", "Practice"),
     "solbox": ("solution", "Worked solution"),
     "pitbox": ("watch", "Watch out"),
+    "hwqbox": ("hwq", "Homework question"),
+    "hwsolbox": ("hwsol", "Homework answer"),
 }
 
 MACROS = [
@@ -273,7 +275,7 @@ def convert_boxes(text: str) -> str:
         )
 
     return re.sub(
-        r"\\begin\{(defbox|resultbox|intbox|practbox|solbox|pitbox)\}(?:\[([^\]]*)\])?(.*?)\\end\{\1\}",
+        r"\\begin\{(defbox|resultbox|intbox|practbox|solbox|pitbox|hwqbox|hwsolbox)\}(?:\[([^\]]*)\])?(.*?)\\end\{\1\}",
         box_block,
         text,
         flags=re.S,

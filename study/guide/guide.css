@@ -16,8 +16,10 @@
   --slate: #3e4a59;
 }
 
-body { background: #f4f0e8; color: var(--ink); }
+body.guide-page,
+body { background: #ffffff !important; color: var(--ink); }
 .guide-shell { max-width: 1080px; }
+.wrap.guide-shell { background: #ffffff; }
 .tools { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
 .tools a.pdf {
   color: var(--paper);
@@ -98,6 +100,10 @@ article#guide .katex-display { margin: 1em 0; overflow-x: auto; overflow-y: hidd
   border-left: 6px solid var(--burgundy);
 }
 .box.watch .box-title { color: var(--burgundy); }
+.box.hwq { background: var(--amber-soft); border-color: #ead7b4; }
+.box.hwq .box-title { color: var(--amber); }
+.box.hwsol { background: var(--plum-soft); border-color: #ddd0e4; }
+.box.hwsol .box-title { color: var(--plum); }
 p.caption { color: var(--muted); font-size: 15px; }
 figure.diagram { display: none; }
 table.data { width: 100%; border-collapse: collapse; font-size: 16px; margin: 12px 0 18px; }

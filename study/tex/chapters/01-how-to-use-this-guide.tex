@@ -1,7 +1,7 @@
 \chapter{How to use this guide}
 \label{ch:map}
 
-This note teaches the mathematics that Homeworks 1 and 2 actually use. Each chapter states a definition, gives the intuition, derives the identity, draws the picture, and then poses a short practice problem with a worked solution. The practice problems are smaller than the homework. They train the same moves.
+This note teaches the mathematics that Homeworks 1 and 2 actually use. Each chapter states a definition, gives the intuition, derives the identity, draws the picture, and then poses a short practice problem with a worked solution. The practice problems are smaller than the homework. They train the same moves. Full Homework~1 theory questions and solutions appear as \texttt{hwqbox}/\texttt{hwsolbox} pairs at the ends of Chapters~\ref{ch:info}--\ref{ch:ar}.
 
 \begin{intbox}[What to read for which homework]
 Homework 1 uses Chapters~\ref{ch:prob}--\ref{ch:ar}. Homework 2 uses those chapters and then Chapters~\ref{ch:vae}--\ref{ch:flow}. The conditional ELBO, the hierarchical ELBO, dequantization, and the Glow convolution are extensions of the lectures. Their derivations are written out here.
@@ -20,6 +20,31 @@ Markov models and autoregression & Ch.~\ref{ch:ar} & L3\\
 ELBO, reparameterization, CVAE & Ch.~\ref{ch:vae} & L4, 12--40, 56--84\\
 Two-layer hierarchical ELBO & Ch.~\ref{ch:hier} & pattern of L4, 38--39\\
 Coupling, flow prior, dequantization, Glow & Ch.~\ref{ch:flow} & L5, 3--73\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+\textbf{Theory problem} & \textbf{Chapter}\\
+\midrule
+HW1 1.1--1.5 (Gaussians, products, conditionals, mixtures, AR factorization) & Ch.~\ref{ch:gauss}\\
+HW1 1.4(b) KL formula (also cross-ref) & Ch.~\ref{ch:info}, Ch.~\ref{ch:gauss}\\
+HW1 2.1--2.2 (Monte Carlo, IS, perplexity) & Ch.~\ref{ch:mc}\\
+HW1 2.3--2.4 (JS, Bernoulli KL) & Ch.~\ref{ch:info}\\
+HW1 3.1--3.3 (Markov, mixture transition, DAG orderings) & Ch.~\ref{ch:ar}\\
+HW1 4.1--4.4 (FVSBN, NADE, MADE) & Ch.~\ref{ch:ar}\\
+HW1 5.1--5.4 (Gaussian conditional NLL) & Ch.~\ref{ch:gauss}\\
+HW1 6.1--6.3 (Gaussian Bayes / logistic) & Ch.~\ref{ch:ar}\\
+HW2 1.1--1.2 (conditional ELBO, reconstruction$-$KL) & Ch.~\ref{ch:vae}\\
+HW2 1.3 (diagonal Gaussian KL) & Ch.~\ref{ch:info}, Ch.~\ref{ch:vae}\\
+HW2 1.4 (reparameterization) & Ch.~\ref{ch:gauss}, Ch.~\ref{ch:vae}\\
+HW2 2.1--2.2 (hierarchical ELBO, marginal priors) & Ch.~\ref{ch:hier}\\
+HW2 3.1--3.2 (flow prior, equivalent models) & Ch.~\ref{ch:flow}, Ch.~\ref{ch:vae}\\
+HW2 4.1--4.4 (coupling, discrete probs, dequantization) & Ch.~\ref{ch:flow}\\
+HW2 5.1--5.2 (Glow $1\times 1$ convolution, LU) & Ch.~\ref{ch:flow}\\
 \bottomrule
 \end{tabularx}
 \end{center}

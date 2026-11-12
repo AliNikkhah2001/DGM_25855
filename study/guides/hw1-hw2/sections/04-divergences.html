@@ -24,6 +24,16 @@ Against the standard normal \(p=\mathcal{N}(0,I)\) this collapses to
 \[
 \mathrm{KL}(q\| \mathcal{N}(0,I))=\frac12\sum_{j=1}^{d}\left(\mu_{q,j}^2+\sigma_{q,j}^2-1-\log\sigma_{q,j}^2\right).\]&lt;/p&gt;&lt;/aside&gt;</p>
 <p>Equation  is the KL implemented in the VAE notebook. Equation  is Homework 2, problem 1.3, before that specialization.</p>
+<p>The same calculation with full covariances \(\Sigma_0,\Sigma_1\succ 0\) produces the multivariate formula used in Homework 1, problem 1.4(b). Write \(p_i=\mathcal{N}(\mu_i,\Sigma_i)\). Then
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: Multivariate Gaussian KL&lt;/p&gt;&lt;p&gt;\[
+\mathrm{KL}(p_0\| p_1)
+=\frac12\Biggl[
+\operatorname{tr}(\Sigma_1^{-1}\Sigma_0)
++(\mu_0-\mu_1)^\top\Sigma_1^{-1}(\mu_0-\mu_1)
+-d
++\log\frac{\det\Sigma_1}{\det\Sigma_0}
+\Biggr].\]&lt;/p&gt;&lt;/aside&gt;
+The trace and Mahalanobis terms come from \(\mathbb{E}_{p_0}[(x-\mu_1)^\top\Sigma_1^{-1}(x-\mu_1)]\). Subtracting the differential entropy \(h(p_0)=\frac d2\log(2\pi e)+\frac12\log\det\Sigma_0\) cancels the \(\frac d2\log(2\pi)\) pieces and leaves . Chapter The Gaussian family uses this formula inside the maximum-entropy Pythagorean identity.</p>
 <aside class="box practice"><p class="box-title">Practice: A number you can check by hand</p><p>Compute \(\mathrm{KL}(\mathcal{N}(0,1)\| \mathcal{N}(0,e))\) and \(\mathrm{KL}(\mathcal{N}(0,e)\| \mathcal{N}(0,1))\).</p></aside>
 <aside class="box solution"><p class="box-title">Worked solution</p><p>Use \(d=1\), \(\mu=0\). First pair: \(\sigma_q^2=1\), \(\sigma_p^2=e\), so
 \(\frac12(\log e-1+1/e)=\frac12(1-1+e^{-1})=1/(2e)\).
@@ -35,4 +45,70 @@ They differ. KL is not symmetric, and the direction that puts a wide Gaussian on
 \[\mathrm{JS}(p\| q)=\frac12\mathrm{KL}(p\| m)+\frac12\mathrm{KL}(q\| m).\]
 JS is symmetric. In nats, \(0\le \mathrm{JS}(p\| q)\le \log 2\). The upper bound \(1\) on the lecture slides is the same statement in bits, where the log is base \(2\). In nats the sharp cap is \(\ln 2\), not \(1\). \(\sqrt{\mathrm{JS}}\) is a metric. JS itself is not, because it can violate the triangle inequality.</p>
 <aside class="box intuition"><p class="box-title">Intuition</p><p>KL is infinite when supports are disjoint, so it cannot compare a model that puts no mass on a point with a data distribution that does. JS stays finite because \(m\) charges both supports. GANs later exploit a divergence with that behaviour. Homework 1 asks you to see the failure of KL directly.</p></aside>
+<p>Expanding the two KL terms and rearranging Shannon entropies gives the entropy form
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: JS as an entropy gap&lt;/p&gt;&lt;p&gt;\[\mathrm{JS}(p\| q)=H(m)-\frac12 H(p)-\frac12 H(q),\]
+in the same base used for the logarithms. Equivalently, if \(Z\sim\mathrm{Bernoulli}(1/2)\) and \(X\mid Z=0\sim p\), \(X\mid Z=1\sim q\), then \(X\sim m\) and
+\[\mathrm{JS}(p\| q)=I(Z;X)=H(X)-H(X\mid Z).\]&lt;/p&gt;&lt;/aside&gt;
+Mutual information satisfies \(0\le I(Z;X)\le H(Z)=\log 2\) in nats. The lower bound is attained if and only if \(p=q\). The upper bound is attained if and only if \(Z\) is a function of \(X\), i.e. \(p\) and \(q\) are mutually singular. Pointwise, \(m\ge p/2\) on \(\{p&gt;0\}\) forces \(\log(p/m)\le\log 2\), so each half of JS is at most \(\log 2\) and the average recovers the same cap.</p>
+<aside class="box practice"><p class="box-title">Practice: JS of two point masses</p><p>On \(\{0,1\}\), take \(p=\delta_0\) and \(q=\delta_1\). Compute \(\mathrm{KL}(p\| q)\) and \(\mathrm{JS}(p\| q)\) in nats.</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>\(\mathrm{KL}(p\| q)=\infty\) because \(q(0)=0\) while \(p(0)=1\). The mixture \(m\) is uniform on two atoms, \(H(m)=\log 2\), and \(H(p)=H(q)=0\), so \(\mathrm{JS}=\log 2\). JS saturates while KL is infinite.</p></aside>
+<h3>Bernoulli KL near the boundary</h3>
+<p>For Bernoulli parameters \(a,c\in(0,1)\),
+\[\mathrm{KL}\left(\mathrm{Ber}(a)\|\mathrm{Ber}(c)\right)
+=a\log\frac ac+(1-a)\log\frac{1-a}{1-c}.\]
+As \(c\to 0^+\) with \(a\) fixed in \((0,1)\), the expansion \(-\log(1-c)=c+O(c^2)\) yields
+&lt;aside class="box result"&gt;&lt;p class="box-title"&gt;Result: Asymmetry at the edge&lt;/p&gt;&lt;p&gt;\[\mathrm{KL}\left(\mathrm{Ber}(a)\|\mathrm{Ber}(c)\right)=-a\log c-H(\mathrm{Ber}(a))+O(c)\to+\infty,\]
+while
+\[\mathrm{KL}\left(\mathrm{Ber}(c)\|\mathrm{Ber}(a)\right)\to-\log(1-a)\in(0,\infty).\]&lt;/p&gt;&lt;/aside&gt;
+Charging an atom that the other distribution abandons costs arbitrarily large KL in one direction and only a finite KL in the other. The contribution \(c\log c\) of a vanishing atom disappears.</p>
+<p>The same one-sided blow-up shows that KL fails the triangle inequality. For \(1&gt;a&gt;b&gt;0\) and \(c\to 0^+\),
+\[\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(c))-\mathrm{KL}(\mathrm{Ber}(b)\|\mathrm{Ber}(c))\]
+grows like \(-(a-b)\log c\to+\infty\), while \(\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(b))\) stays finite. For every small enough \(c\),
+\[\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(c))
+&gt;\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(b))+\mathrm{KL}(\mathrm{Ber}(b)\|\mathrm{Ber}(c)).\]</p>
+<aside class="box practice"><p class="box-title">Practice: A numerical triangle break</p><p>In nats, compare \(\mathrm{KL}(\mathrm{Ber}(1/2)\|\mathrm{Ber}(1/100))\) with the sum through \(\mathrm{Ber}(1/5)\).</p></aside>
+<aside class="box solution"><p class="box-title">Worked solution</p><p>Direct evaluation gives about \(1.6145\) on the left and \(0.2231+0.4287=0.6518\) on the right. The direct path is more than twice as expensive as the broken path.</p></aside>
+<h3>Homework 1 problems</h3>
+<p>The Monte Carlo, importance sampling, and perplexity parts of Homework 1 problem 2 live in Chapter Monte Carlo. The KL and JS parts are collected here. The multivariate Gaussian KL formula  is the identity invoked by Homework 1, problem 1.4(b); the full Pythagorean argument sits with the Gaussian maximum-entropy section in Chapter The Gaussian family.</p>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.3</p><p>The Jensen–Shannon divergence is \(\mathrm{JS}(p\| q)=\frac12\mathrm{KL}(p\| m)+\frac12\mathrm{KL}(q\| m)\) with \(m=(p+q)/2\). Rewrite JS in terms of Shannon entropies. Show that \(\mathrm{JS}(p\| q)=I(Z;X)\) for a fair Bernoulli bit \(Z\) that chooses between sampling \(X\) from \(p\) or from \(q\). Deduce the sharp bounds \(0\le\mathrm{JS}\le\log 2\) in nats, and characterize equality.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.3</p><p>Expanding the two KL terms,
+\[\begin{aligned}
+\mathrm{JS}(p\| q)
+&amp;=\frac12\sum p\log\frac pm+\frac12\sum q\log\frac qm\\
+&amp;=-\frac12 H(p)-\frac12 H(q)-\sum m\log m\\
+&amp;=H(m)-\frac12 H(p)-\frac12 H(q).
+\end{aligned}\]
+Let \(Z\sim\mathrm{Bernoulli}(1/2)\) and \(X\mid Z=0\sim p\), \(X\mid Z=1\sim q\). Then \(X\sim m\) and
+\[I(Z;X)=H(X)-H(X\mid Z)=H(m)-\frac12 H(p)-\frac12 H(q)=\mathrm{JS}(p\| q).\]
+In nats, \(0\le I(Z;X)\le H(Z)=\log 2\). The lower bound holds with equality if and only if \(Z\perp X\), i.e. \(p=q\). The upper bound holds if and only if \(H(Z\mid X)=0\), i.e. \(Z\) is a function of \(X\), i.e. \(p\) and \(q\) are mutually singular.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.3(a)</p><p>Prove the pointwise bound \(\mathrm{KL}(p\| m)\le\log 2\) (and likewise for \(q\)), and recover \(\mathrm{JS}\le\log 2\). Give an example where \(\mathrm{KL}(p\| q)=\infty\) while \(\mathrm{JS}(p\| q)\) is finite and maximal. Comment on the bound \(0\le\mathrm{JS}\le 1\) that appears when the logarithm is taken in base \(2\).</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.3(a)</p><p>Since \(m\ge p/2\), one has \(\log(p/m)\le\log 2\) on \(\{p&gt;0\}\), so \(\mathrm{KL}(p\| m)\le\log 2\). The same bound holds for \(q\), and averaging recovers \(\mathrm{JS}\le\log 2\). Equality holds simultaneously when \(m=p/2\) \(p\)-a.s. and \(m=q/2\) \(q\)-a.s., i.e. on disjoint supports.</p>
+<p>If \(p=\delta_0\) and \(q=\delta_1\) on \(\{0,1\}\), then \(q(0)=0\) while \(p(0)=1\), so \(\mathrm{KL}(p\| q)=\infty\), but the supports are disjoint and \(\mathrm{JS}(p\| q)=\log 2\), the maximum.</p>
+<p>The quoted bound \(0\le\mathrm{JS}\le 1\) is tight for the base-\(2\) logarithm (the maximum is one bit). In nats the supremum is \(\ln 2\), and the upper bound \(1\) is valid but not sharp.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.4</p><p>For \(a\in(0,1)\) fixed, expand \(\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(c))\) as \(c\to 0^+\), and evaluate the limit of \(\mathrm{KL}(\mathrm{Ber}(c)\|\mathrm{Ber}(a))\). Explain the asymmetry.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.4</p><p>\[\begin{aligned}
+\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(c))
+&amp;=a\log\frac ac+(1-a)\log\frac{1-a}{1-c}\\
+&amp;=-a\log c+\left(a\log a+(1-a)\log(1-a)\right)-(1-a)\log(1-c).
+\end{aligned}\]
+As \(c\to 0^+\), \(-\log(1-c)=c+O(c^2)\), so
+\[\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(c))
+=-a\log c-H(\mathrm{Ber}(a))+O(c).\]
+The leading term is \(-a\log c\to+\infty\). The constant after it is \(-H(\mathrm{Ber}(a))\).</p>
+<p>In the other direction, \(c\log c\to 0\) and \((1-c)\log((1-c)/(1-a))\to-\log(1-a)\), so
+\[\mathrm{KL}(\mathrm{Ber}(c)\|\mathrm{Ber}(a))\to-\log(1-a)\in(0,\infty).\]
+KL is not symmetric: charging the point that the other distribution is abandoning costs an arbitrarily large KL in one direction, and only a finite KL in the other. The \(c\log c\) contribution of a vanishing atom disappears.</p></aside>
+<aside class="box hwq"><p class="box-title">Homework question: Homework 1, problem 2.4(a)</p><p>Show that KL does not satisfy the triangle inequality, by exhibiting Bernoulli parameters \(1&gt;a&gt;b&gt;0\) and a sequence \(c\to 0^+\) for which
+\[\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(c))
+&gt;\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(b))+\mathrm{KL}(\mathrm{Ber}(b)\|\mathrm{Ber}(c)).\]
+Give a concrete numerical triple in nats.</p></aside>
+<aside class="box hwsol"><p class="box-title">Homework answer: Homework 1, problem 2.4(a)</p><p>For \(1&gt;a&gt;b&gt;0\),
+\[\begin{aligned}
+\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(c))&amp;=-a\log c+O(1),\\
+\mathrm{KL}(\mathrm{Ber}(b)\|\mathrm{Ber}(c))&amp;=-b\log c+O(1),
+\end{aligned}\]
+while \(\mathrm{KL}(\mathrm{Ber}(a)\|\mathrm{Ber}(b))\) stays finite. Their difference grows like \(-(a-b)\log c\to+\infty\). So for every sufficiently small \(c&gt;0\) the displayed strict inequality holds.</p>
+<p>Numerical triple, in nats: \((a,b,c)=(1/2, 1/5, 1/100)\),
+\[\mathrm{KL}(\mathrm{Ber}(1/2)\|\mathrm{Ber}(1/100))\approx 1.6145,\]
+\[\mathrm{KL}(\mathrm{Ber}(1/2)\|\mathrm{Ber}(1/5))+\mathrm{KL}(\mathrm{Ber}(1/5)\|\mathrm{Ber}(1/100))\approx 0.2231+0.4287=0.6518.\]</p></aside>
 </section>

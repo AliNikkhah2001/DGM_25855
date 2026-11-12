@@ -2,7 +2,7 @@
 
 The Homework 2 study map is a static page, `study/index.html`. Theory guides are a catalog of section files. GitHub Pages loads `study/catalog.json`, then each guide’s `manifest.json`, then concatenates the section HTML and typesets it with KaTeX. Adding a later homework does not require editing the page shell.
 
-The printed guide and the web guide share one LaTeX source. Colors match the PDF: burgundy results, navy definitions, teal intuition, amber practice, plum solutions, and a white watch-out box with a burgundy edge.
+The printed guide and the web guide share one LaTeX source. The page background is white. Colored boxes match the PDF: burgundy results, navy definitions, teal intuition, amber practice and homework questions (`hwqbox`), plum solutions and homework answers (`hwsolbox`), and a white watch-out box with a burgundy edge.
 
 ## What is already here
 

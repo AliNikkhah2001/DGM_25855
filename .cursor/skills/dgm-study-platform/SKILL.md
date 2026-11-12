@@ -30,6 +30,6 @@ Create `study/guides/<id>/manifest.json` and `sections/*.html`, put the PDF in `
 
 ## Writing rules
 
-Teach the identity in original exposition and give a smaller practice problem with a worked solution. Do not paste a completed homework submission into a section. Keep the PDF palette: burgundy results (`#8d3b2e` / `#f6ebe7`), navy definitions (`#1f4e79` / `#e7f0f7`), teal intuition (`#1d6a5a` / `#e5f4ef`), amber practice (`#8a5a12` / `#fbf3e4`), plum solutions (`#5c3d6e` / `#f3ecf6`), and a white watch-out box with a burgundy frame.
+Teach the identity in original exposition first, then map each homework theory part into the matching chapter. For every homework theory question, use a labeled pair `\begin{hwqbox}[Homework N, problem X.Y]...\end{hwqbox}` followed by `\begin{hwsolbox}[Homework N, problem X.Y]...\end{hwsolbox}` so the web class is `hwq` / `hwsol`. Expand teaching before those boxes when a step is missing. Keep the PDF page background white (`paper` = `#FFFFFF`). Colored boxes: burgundy results (`#8d3b2e` / `#f6ebe7`), navy definitions (`#1f4e79` / `#e7f0f7`), teal intuition (`#1d6a5a` / `#e5f4ef`), amber practice and homework questions (`#8a5a12` / `#fbf3e4`), plum solutions and homework answers (`#5c3d6e` / `#f3ecf6`), and a white watch-out box with a burgundy frame.
 
 Open the guide over HTTP. A `file://` page cannot fetch the sections.

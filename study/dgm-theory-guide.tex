@@ -22,7 +22,7 @@
 
 \definecolor{ink}{HTML}{1C1915}
 \definecolor{muted}{HTML}{5C564C}
-\definecolor{paper}{HTML}{FBF8F2}
+\definecolor{paper}{HTML}{FFFFFF}
 \definecolor{rule}{HTML}{E0D5C4}
 \definecolor{burgundy}{HTML}{8D3B2E}
 \definecolor{burgundysoft}{HTML}{F6EBE7}
@@ -79,6 +79,16 @@
   coltitle=burgundy, fonttitle=\bfseries, title={Watch out\ifstrempty{#1}{}{: #1}},
   arc=2pt, boxrule=0.8pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
   borderline west={3pt}{0pt}{burgundy}}
+
+\newtcolorbox{hwqbox}[1][]{%
+  breakable, enhanced, colback=ambersoft, colframe=amber,
+  coltitle=white, fonttitle=\bfseries, title={Homework question\ifstrempty{#1}{}{: #1}},
+  arc=2pt, boxrule=0.7pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
+
+\newtcolorbox{hwsolbox}[1][]{%
+  breakable, enhanced, colback=plumsoft, colframe=plum,
+  coltitle=white, fonttitle=\bfseries, title={Homework answer\ifstrempty{#1}{}{: #1}},
+  arc=2pt, boxrule=0.7pt, left=8pt, right=8pt, top=6pt, bottom=6pt}
 
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\R}{\mathbb{R}}
